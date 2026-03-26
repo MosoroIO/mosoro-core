@@ -3,10 +3,14 @@
 Mosoro Main Edge Agent with Auto-Discovery
 ==========================================
 
-This version automatically discovers and loads vendor adapters from the adapters/ folder.
-No manual registration in adapter_map is needed anymore.
+Discovers vendor adapters in two ways (in priority order):
 
-Naming convention:
+1. **Entry-point discovery** — Adapters installed via pip that register under
+   the ``mosoro.adapters`` entry point group (e.g., mosoro-adapters-community).
+2. **Filesystem discovery** — Adapters placed directly in the local
+   ``agents/adapters/`` directory (useful for development or custom adapters).
+
+Naming convention for filesystem adapters:
 - File:    locus_adapter.py
 - Class:   LocusAdapter (must inherit from BaseMosoroAdapter)
 """
@@ -124,7 +128,30 @@ class MosoroEdgeAgent:
         return context
 
     def _discover_and_load_adapter(self) -> BaseMosoroAdapter:
-        """Automatically discover and instantiate the correct adapter for the vendor."""
+        """Discover and instantiate the correct adapter for the configured vendor.
+
+        Discovery order:
+            1. Entry-point registry (pip-installed adapter packages)
+            2. Local filesystem (agents/adapters/ directory)
+        """
+        # --- Strategy 1: Entry-point discovery (pip-installed adapters) ---
+        try:
+            from mosoro_core.adapter_registry import discover_adapters
+
+            registered = discover_adapters()
+            if self.vendor in registered:
+                adapter_class = registered[self.vendor]
+                adapter_instance = adapter_class(self.robot_id, self.config)
+                logger.info(
+                    "Loaded adapter '%s' for robot %s via entry point.",
+                    adapter_class.__name__,
+                    self.robot_id,
+                )
+                return adapter_instance
+        except Exception as e:
+            logger.debug("Entry-point adapter discovery failed: %s", e)
+
+        # --- Strategy 2: Filesystem discovery (local adapters/ directory) ---
         adapters_package = "agents.adapters"
         package_path = Path(__file__).parent.parent / "adapters"
 
@@ -134,24 +161,33 @@ class MosoroEdgeAgent:
 
             try:
                 module = importlib.import_module(f"{adapters_package}.{module_name}")
-                
+
                 # Find any class in the module that inherits from BaseMosoroAdapter
                 for name, obj in inspect.getmembers(module, inspect.isclass):
-                    if (issubclass(obj, BaseMosoroAdapter) and 
-                        obj != BaseMosoroAdapter and 
+                    if (issubclass(obj, BaseMosoroAdapter) and
+                        obj != BaseMosoroAdapter and
                         name.lower().startswith(self.vendor)):
-                        
+
                         adapter_instance = obj(self.robot_id, self.config)
-                        logger.info(f"Auto-discovered and loaded {name} for robot {self.robot_id}")
+                        logger.info(
+                            "Loaded adapter '%s' for robot %s via filesystem.",
+                            name,
+                            self.robot_id,
+                        )
                         return adapter_instance
 
             except Exception as e:
                 logger.warning(f"Failed to load module {module_name}: {e}")
 
-        # Fallback error
-        logger.error(f"No adapter found for vendor '{self.vendor}'. "
-                    f"Make sure a file named {self.vendor}_adapter.py exists in agents/adapters/ "
-                    f"with a class inheriting from BaseMosoroAdapter.")
+        # --- No adapter found ---
+        logger.error(
+            "No adapter found for vendor '%s'. "
+            "Install an adapter package (e.g., pip install mosoro-adapters-community) "
+            "or place a %s_adapter.py file in agents/adapters/ "
+            "with a class inheriting from BaseMosoroAdapter.",
+            self.vendor,
+            self.vendor,
+        )
         sys.exit(1)
 
     def on_connect(self, client, userdata, flags, rc):

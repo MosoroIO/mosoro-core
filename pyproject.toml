@@ -64,6 +64,11 @@ include = ["mosoro_core*", "agents*", "gateway*", "api*", "security*"]
 # Premium modules register their plugin entry points here in their own pyproject.toml.
 # Example: security_pro = "mosoro_security_pro:plugin"
 
+[project.entry-points."mosoro.adapters"]
+# Adapter packages register their adapters here in their own pyproject.toml.
+# Example: fetch = "adapters.fetch:FetchAdapter"
+# See mosoro-adapters-community for the reference implementation.
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100

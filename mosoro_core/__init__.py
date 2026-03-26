@@ -22,10 +22,13 @@ The neutral bridge for multi-vendor warehouse robot fleets.
 
 Public API:
     Models: MosoroMessage, MosoroPayload, Position, MessageHeader, CurrentTask, ErrorDetail
+    Adapters: BaseMosoroAdapter, discover_adapters
     Plugins: discover_plugins, mount_plugin_routers, MosoroPlugin
     Version: __version__
 """
 
+from mosoro_core.adapter_registry import discover_adapters
+from mosoro_core.base_adapter import BaseMosoroAdapter
 from mosoro_core.models import (
     CurrentTask,
     ErrorDetail,
@@ -46,6 +49,9 @@ __all__ = [
     "MessageHeader",
     "CurrentTask",
     "ErrorDetail",
+    # Adapters
+    "BaseMosoroAdapter",
+    "discover_adapters",
     # Plugins
     "discover_plugins",
     "mount_plugin_routers",

@@ -1,0 +1,29 @@
+# Mosoro Edge Agent Configuration — Example Template
+# ====================================================
+#
+# Copy this file and customize for your robot vendor.
+# Vendor-specific config files are provided by adapter packages
+# (e.g., mosoro-adapters-community).
+#
+# See: https://github.com/mosoroio/mosoro-adapters-community
+
+robot_id: "my-robot-001"
+vendor: "my_vendor"
+
+# Vendor-specific connection details
+api_base_url: "http://192.168.1.100:8080"
+api_key: "your-api-key-here"
+
+# MQTT settings (production: TLS on port 8883)
+mqtt_broker: "mosquitto"
+mqtt_port: 8883
+mqtt_use_tls: true
+# mqtt_ca_cert: "/run/secrets/mqtt_ca_cert"
+# mqtt_client_cert: "/certs/my-robot-001.crt"
+# mqtt_client_key: "/certs/my-robot-001.key"
+
+# Polling and logging
+poll_interval: 5.0
+log_level: "INFO"
+api_timeout: 10.0
+max_retries: 3
