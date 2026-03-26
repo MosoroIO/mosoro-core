@@ -41,7 +41,10 @@ class MosoroPayload(BaseModel):
 
 
 class MosoroMessage(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_encoders={datetime: lambda v: v.isoformat()},
+    )
 
     header: MessageHeader = Field(default_factory=MessageHeader)
     robot_id: str
@@ -49,6 +52,3 @@ class MosoroMessage(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     type: Literal["status", "event", "command", "traffic_update", "birth", "error"]
     payload: MosoroPayload = Field(default_factory=MosoroPayload)
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
