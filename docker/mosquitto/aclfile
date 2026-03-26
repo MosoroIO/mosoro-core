@@ -1,0 +1,20 @@
+# Mosoro v1.5 ACL - Least Privilege
+
+user gateway
+topic readwrite mosoro/v1/#
+
+user api
+topic read mosoro/v1/agents/+/status
+topic read mosoro/v1/agents/+/events
+topic read mosoro/v1/traffic/#
+topic write mosoro/v1/admin/#
+
+user agent-locus-001
+topic write mosoro/v1/agents/locus-001/#
+topic read mosoro/v1/agents/locus-001/commands
+topic read mosoro/v1/traffic/#
+
+pattern readwrite mosoro/v1/agents/%c/#
+pattern read mosoro/v1/traffic/#
+
+topic deny #

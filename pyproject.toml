@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mosoro-core"
+version = "1.0.0"
+description = "The neutral bridge for multi-vendor warehouse robot fleets"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.11"
+authors = [
+    {name = "Mike Stemple", email = "mike@mosoro.io"},
+]
+keywords = ["robotics", "warehouse", "mqtt", "fleet-management", "amr"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Robotics",
+]
+
+dependencies = [
+    "paho-mqtt>=2.1.0",
+    "PyYAML>=6.0.2",
+    "pydantic>=2.10.0",
+]
+
+[project.optional-dependencies]
+agents = [
+    "aiohttp>=3.9.0",
+]
+api = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "websockets>=12.0",
+    "PyJWT>=2.8.0",
+]
+security = [
+    "cryptography>=42.0.0",
+    "PyJWT>=2.8.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0",
+    "ruff>=0.4.0",
+]
+all = [
+    "mosoro-core[agents,api,security,dev]",
+]
+
+[project.urls]
+Homepage = "https://mosoro.io"
+Repository = "https://github.com/mosoro/mosoro-core"
+Documentation = "https://docs.mosoro.io"
+
+[tool.setuptools.packages.find]
+include = ["mosoro_core*", "agents*", "gateway*", "api*", "security*"]
+
+[project.entry-points."mosoro.plugins"]
+# Premium modules register their plugin entry points here in their own pyproject.toml.
+# Example: security_pro = "mosoro_security_pro:plugin"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

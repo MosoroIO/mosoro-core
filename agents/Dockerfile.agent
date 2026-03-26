@@ -1,0 +1,21 @@
+# Copyright 2026 Mosoro Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY core/ core/
+COPY adapters/ adapters/
+COPY config.yaml.example config.yaml
+
+# Non-root user for security
+RUN useradd -m mosoro && chown -R mosoro:mosoro /app
+USER mosoro
+
+# Note: mosoro_core/ is mounted via docker-compose volumes
+# or copied into the build context before building.
+CMD ["python", "-m", "core.agent"]

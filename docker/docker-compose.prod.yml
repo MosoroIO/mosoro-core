@@ -1,0 +1,188 @@
+version: '3.9'
+
+services:
+  # ============================================================================
+  # Mosquitto MQTT Broker - Production with TLS + Authentication
+  # ============================================================================
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosoro-mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"    # Plain MQTT (internal only - disable in final prod)
+      - "8883:8883"    # MQTT over TLS (recommended)
+      - "9001:9001"    # WebSocket (optional, disable if not needed)
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/aclfile:/mosquitto/config/aclfile:ro
+      - ./mosquitto/passwordfile:/mosquitto/config/passwordfile:ro
+      - ./certs:/mosquitto/certs:ro          # TLS certificates
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    networks:
+      - mosoro-net
+    secrets:
+      - mqtt_ca_cert
+      - mqtt_server_cert
+      - mqtt_server_key
+
+  # ============================================================================
+  # Central Gateway
+  # ============================================================================
+  gateway:
+    build: ../gateway
+    container_name: mosoro-gateway
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - MQTT_BROKER_PORT=8883
+      - MQTT_USE_TLS=true
+      - MQTT_CA_CERT=/run/secrets/mqtt_ca_cert
+    volumes:
+      - ../gateway:/app
+    networks:
+      - mosoro-net
+    secrets:
+      - mqtt_ca_cert
+
+  # ============================================================================
+  # Unified API + Dashboard
+  # ============================================================================
+  api:
+    build: ../api
+    container_name: mosoro-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mosquitto
+      - gateway
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - MQTT_BROKER_PORT=8883
+      - MQTT_USE_TLS=true
+      - MQTT_CA_CERT=/run/secrets/mqtt_ca_cert
+    volumes:
+      - ../api:/app
+    networks:
+      - mosoro-net
+    secrets:
+      - mqtt_ca_cert
+
+  # ============================================================================
+  # Edge Agents - Production Configuration
+  # ============================================================================
+
+  agent-locus:
+    build: ../agents
+    container_name: mosoro-agent-locus
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      - CONFIG_PATH=/config/locus.yaml
+      - MQTT_BROKER_HOST=mosquitto
+      - MQTT_BROKER_PORT=8883
+      - MQTT_USE_TLS=true
+      - MQTT_CA_CERT=/run/secrets/mqtt_ca_cert
+    volumes:
+      - ../agents/config/locus.yaml:/config/locus.yaml:ro
+    networks:
+      - mosoro-net
+    secrets:
+      - mqtt_ca_cert
+
+  agent-stretch:
+    build: ../agents
+    container_name: mosoro-agent-stretch
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      - CONFIG_PATH=/config/stretch.yaml
+      - MQTT_BROKER_HOST=mosquitto
+      - MQTT_BROKER_PORT=8883
+      - MQTT_USE_TLS=true
+      - MQTT_CA_CERT=/run/secrets/mqtt_ca_cert
+    volumes:
+      - ../agents/config/stretch.yaml:/config/stretch.yaml:ro
+    networks:
+      - mosoro-net
+    secrets:
+      - mqtt_ca_cert
+
+  agent-geekplus:
+    build: ../agents
+    container_name: mosoro-agent-geekplus
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      - CONFIG_PATH=/config/geekplus.yaml
+      - MQTT_BROKER_HOST=mosquitto
+      - MQTT_BROKER_PORT=8883
+      - MQTT_USE_TLS=true
+      - MQTT_CA_CERT=/run/secrets/mqtt_ca_cert
+    volumes:
+      - ../agents/config/geekplus.yaml:/config/geekplus.yaml:ro
+    networks:
+      - mosoro-net
+    secrets:
+      - mqtt_ca_cert
+
+  agent-mir:
+    build: ../agents
+    container_name: mosoro-agent-mir
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      - CONFIG_PATH=/config/mir.yaml
+      - MQTT_BROKER_HOST=mosquitto
+      - MQTT_BROKER_PORT=8883
+      - MQTT_USE_TLS=true
+      - MQTT_CA_CERT=/run/secrets/mqtt_ca_cert
+    volumes:
+      - ../agents/config/mir.yaml:/config/mir.yaml:ro
+    networks:
+      - mosoro-net
+    secrets:
+      - mqtt_ca_cert
+
+  agent-fetch:
+    build: ../agents
+    container_name: mosoro-agent-fetch
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      - CONFIG_PATH=/config/fetch.yaml
+      - MQTT_BROKER_HOST=mosquitto
+      - MQTT_BROKER_PORT=8883
+      - MQTT_USE_TLS=true
+      - MQTT_CA_CERT=/run/secrets/mqtt_ca_cert
+    volumes:
+      - ../agents/config/fetch.yaml:/config/fetch.yaml:ro
+    networks:
+      - mosoro-net
+    secrets:
+      - mqtt_ca_cert
+
+networks:
+  mosoro-net:
+    driver: bridge
+    internal: true                # Optional: restrict external access
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+
+secrets:
+  mqtt_ca_cert:
+    file: ../certs/ca.crt
+  mqtt_server_cert:
+    file: ../certs/server.crt
+  mqtt_server_key:
+    file: ../certs/server.key

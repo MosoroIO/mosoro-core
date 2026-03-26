@@ -1,0 +1,21 @@
+# Mosoro Edge Agent Configuration - Locus Robotics
+robot_id: "locus-001"
+vendor: "locus"
+
+# Locus-specific connection details
+api_base_url: "http://192.168.1.100:8080/api"
+api_key: "your-locus-api-key-here"
+
+# MQTT settings (production: TLS on port 8883)
+mqtt_broker: "mosquitto"
+mqtt_port: 8883
+mqtt_use_tls: true
+# mqtt_ca_cert: "/run/secrets/mqtt_ca_cert"       # via Docker secrets
+# mqtt_client_cert: "/certs/locus-001.crt"        # for mTLS
+# mqtt_client_key: "/certs/locus-001.key"         # for mTLS
+
+# Polling and logging
+poll_interval: 5.0
+log_level: "INFO"
+api_timeout: 10.0
+max_retries: 3

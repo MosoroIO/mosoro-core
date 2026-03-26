@@ -1,0 +1,21 @@
+# Mosoro Edge Agent Configuration - Geekplus / Seer
+robot_id: "geekplus-001"
+vendor: "geekplus"
+
+# Geekplus / Seer connection details
+api_base_url: "http://192.168.1.150:8080"
+api_key: "your-geekplus-api-key-here"
+
+# MQTT settings (production: TLS on port 8883)
+mqtt_broker: "mosquitto"
+mqtt_port: 8883
+mqtt_use_tls: true
+# mqtt_ca_cert: "/run/secrets/mqtt_ca_cert"       # via Docker secrets
+# mqtt_client_cert: "/certs/geekplus-001.crt"     # for mTLS
+# mqtt_client_key: "/certs/geekplus-001.key"      # for mTLS
+
+# Polling and logging
+poll_interval: 5.0
+log_level: "INFO"
+api_timeout: 8.0
+max_retries: 3

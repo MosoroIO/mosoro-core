@@ -1,0 +1,124 @@
+# =============================================================================
+# Mosoro Gateway Rules Configuration
+# =============================================================================
+# Simple if-then rules for routing commands between robots.
+# The gateway evaluates these rules when it receives status/event messages.
+#
+# Rule format:
+#   - name: Human-readable rule name
+#     trigger:
+#       type: Message type to match (status, event, etc.)
+#       vendor: Vendor to match (optional)
+#       conditions: Key-value conditions on the payload
+#     action:
+#       type: Action to take (send_command, publish_traffic, log)
+#       target: How to find the target robot
+#       command: Command payload to send
+# =============================================================================
+
+rules:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Rule 1: Locus task complete → hand off to nearest idle Stretch
+  # ──────────────────────────────────────────────────────────────────────────
+  - name: "locus_complete_to_stretch_handoff"
+    description: "When a Locus robot completes a task, find the nearest idle Stretch and send a pick command"
+    enabled: true
+    trigger:
+      type: "event"
+      vendor: "locus"
+      conditions:
+        event_type: "task_complete"
+    action:
+      type: "send_command"
+      target:
+        strategy: "nearest_idle"       # nearest_idle, specific, broadcast
+        vendor: "stretch"
+        status: "idle"
+      command:
+        action: "pick"
+        parameters:
+          use_source_position: true     # Use the triggering robot's position
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Rule 2: Traffic yield — robot approaching intersection
+  # ──────────────────────────────────────────────────────────────────────────
+  - name: "traffic_yield_at_intersection"
+    description: "When any robot enters a defined zone, broadcast a yield message"
+    enabled: true
+    trigger:
+      type: "status"
+      conditions:
+        status: "moving"
+        zone: "intersection_A"         # Requires zone detection in payload
+    action:
+      type: "publish_traffic"
+      topic: "mosoro/v1/traffic/yield"
+      payload:
+        zone: "intersection_A"
+        priority: "first_arrival"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Rule 3: Low battery → send robot to charging station
+  # ──────────────────────────────────────────────────────────────────────────
+  - name: "low_battery_charge"
+    description: "When any robot's battery drops below 15%, send it to charge"
+    enabled: true
+    trigger:
+      type: "status"
+      conditions:
+        battery_below: 15.0
+    action:
+      type: "send_command"
+      target:
+        strategy: "self"               # Send command back to the same robot
+      command:
+        action: "move_to"
+        position:
+          x: 0.0
+          y: 0.0
+          map_id: "charging_zone"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Rule 4: Error escalation — log and alert
+  # ──────────────────────────────────────────────────────────────────────────
+  - name: "error_escalation"
+    description: "When any robot reports an error, log it and publish an alert"
+    enabled: true
+    trigger:
+      type: "error"
+    action:
+      type: "log"
+      level: "warning"
+      message: "Robot {robot_id} reported error: {errors}"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Rule 5: Geekplus complete → notify Locus for next pickup
+  # ──────────────────────────────────────────────────────────────────────────
+  - name: "geekplus_complete_to_locus"
+    description: "When Geekplus delivers a tote, notify nearest idle Locus for next pickup"
+    enabled: false                     # Disabled by default — enable for specific workflows
+    trigger:
+      type: "event"
+      vendor: "geekplus"
+      conditions:
+        event_type: "task_complete"
+        task_type: "tote_delivery"
+    action:
+      type: "send_command"
+      target:
+        strategy: "nearest_idle"
+        vendor: "locus"
+        status: "idle"
+      command:
+        action: "move_to"
+        parameters:
+          use_source_position: true
+
+# =============================================================================
+# Notes
+# =============================================================================
+# - Rules are evaluated in order; first matching rule wins.
+# - "nearest_idle" strategy uses the fleet state store to find the closest robot.
+# - Future: Rules may support additional suggestion strategies.
+# - Zone detection requires position-to-zone mapping (not yet implemented).
+# =============================================================================

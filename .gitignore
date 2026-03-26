@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TLS Certificates (NEVER commit private keys)
+certs/*.key
+certs/*.crt
+!certs/.gitkeep
+
+# MQTT password file
+docker/mosquitto/passwordfile
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Docker
+docker-compose.override.yml
+
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+
+# History Machine
+.history_machine/
+
+# Confidential strategy documents (do not commit to public repo)
+docs/Mosoro Roadmap*.md
+docs/Mosoro Technical Blueprint*.md
+plans/confidential-audit.md
+plans/mosoro-product-architecture.md
+plans/mosoro-audit-and-plan.md
+plans/mosoro-workspace-strategy.md
+plans/workspace-implementation-plan.md
+plans/mosoro-core-readiness.md
+
+# Additional certificate formats
+certs/*.pem
