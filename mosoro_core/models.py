@@ -1,12 +1,15 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Literal, Dict, Any, List, Optional
-from uuid import uuid4
 from datetime import datetime
+from typing import Any, Dict, List, Literal, Optional
+from uuid import uuid4
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class MessageHeader(BaseModel):
     message_id: str = Field(default_factory=lambda: str(uuid4()))
     version: Literal["1.0"] = "1.0"
     correlation_id: Optional[str] = None
+
 
 class Position(BaseModel):
     x: float
@@ -15,14 +18,17 @@ class Position(BaseModel):
     theta: Optional[float] = None
     map_id: Optional[str] = None
 
+
 class CurrentTask(BaseModel):
     task_id: str
     task_type: str
     progress: Optional[float] = Field(0.0, ge=0.0, le=100.0)
 
+
 class ErrorDetail(BaseModel):
     code: str
     message: str
+
 
 class MosoroPayload(BaseModel):
     position: Optional[Position] = None
@@ -33,8 +39,9 @@ class MosoroPayload(BaseModel):
     errors: Optional[List[ErrorDetail]] = None
     vendor_specific: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
+
 class MosoroMessage(BaseModel):
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra="forbid")
 
     header: MessageHeader = Field(default_factory=MessageHeader)
     robot_id: str
@@ -44,6 +51,4 @@ class MosoroMessage(BaseModel):
     payload: MosoroPayload = Field(default_factory=MosoroPayload)
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+        json_encoders = {datetime: lambda v: v.isoformat()}

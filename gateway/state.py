@@ -123,11 +123,7 @@ class FleetStateStore:
         async with self._lock:
             if include_expired:
                 return dict(self._robots)
-            return {
-                rid: state
-                for rid, state in self._robots.items()
-                if not state.is_expired
-            }
+            return {rid: state for rid, state in self._robots.items() if not state.is_expired}
 
     async def get_robots_by_vendor(self, vendor: str) -> List[RobotState]:
         """Get all robots of a specific vendor."""
@@ -195,13 +191,15 @@ class FleetStateStore:
     async def add_event(self, event: Dict[str, Any]):
         """Store an event in the event log."""
         async with self._lock:
-            self._events.append({
-                **event,
-                "_received_at": time.time(),
-            })
+            self._events.append(
+                {
+                    **event,
+                    "_received_at": time.time(),
+                }
+            )
             # Trim to max size
             if len(self._events) > self._max_events:
-                self._events = self._events[-self._max_events:]
+                self._events = self._events[-self._max_events :]
 
     async def get_recent_events(self, limit: int = 50) -> List[Dict[str, Any]]:
         """Get the most recent events."""
@@ -217,9 +215,7 @@ class FleetStateStore:
     async def cleanup_expired(self):
         """Remove all expired robot entries."""
         async with self._lock:
-            expired = [
-                rid for rid, state in self._robots.items() if state.is_expired
-            ]
+            expired = [rid for rid, state in self._robots.items() if state.is_expired]
             for rid in expired:
                 del self._robots[rid]
                 logger.info(f"Cleaned up expired state for robot {rid}")

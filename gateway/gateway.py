@@ -38,8 +38,7 @@ import logging
 import os
 import signal
 import sys
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from uuid import uuid4
 
 import yaml
@@ -188,6 +187,7 @@ class MosoroGateway:
         except ImportError:
             logger.warning("security.mqtt_tls not available, using basic TLS")
             import ssl
+
             ca_cert = os.environ.get("MQTT_CA_CERT", "/run/secrets/mqtt_ca_cert")
             self.client.tls_set(ca_certs=ca_cert, tls_version=ssl.PROTOCOL_TLS_CLIENT)
         except FileNotFoundError as e:
@@ -250,8 +250,10 @@ class MosoroGateway:
         # Invoke on_message_received plugin hooks
         try:
             invoke_hooks(
-                self.gateway_hooks, "on_message_received",
-                topic=topic, payload=payload,
+                self.gateway_hooks,
+                "on_message_received",
+                topic=topic,
+                payload=payload,
             )
         except Exception:
             logger.exception("Unexpected error invoking plugin hooks.")
@@ -264,12 +266,14 @@ class MosoroGateway:
 
         # Store events
         if msg_type == "events":
-            await self.state.add_event({
-                "robot_id": robot_id,
-                "vendor": vendor,
-                "topic": topic,
-                "payload": payload,
-            })
+            await self.state.add_event(
+                {
+                    "robot_id": robot_id,
+                    "vendor": vendor,
+                    "topic": topic,
+                    "payload": payload,
+                }
+            )
 
         # Handle birth messages
         if msg_type == "birth":
@@ -283,7 +287,8 @@ class MosoroGateway:
             # Invoke on_rule_matched plugin hooks
             try:
                 invoke_hooks(
-                    self.gateway_hooks, "on_rule_matched",
+                    self.gateway_hooks,
+                    "on_rule_matched",
                     rule_name=action.get("_rule_name", "unknown"),
                     trigger_message=payload,
                     action=action,
@@ -314,7 +319,9 @@ class MosoroGateway:
             message = action.get("message", "Rule triggered")
             # Simple template substitution
             message = message.replace("{robot_id}", source_robot_id)
-            message = message.replace("{errors}", str(source_msg.get("payload", {}).get("errors", [])))
+            message = message.replace(
+                "{errors}", str(source_msg.get("payload", {}).get("errors", []))
+            )
             getattr(logger, level, logger.info)(f"[Rule: {rule_name}] {message}")
 
         else:
@@ -377,7 +384,8 @@ class MosoroGateway:
             # Invoke on_command_sent plugin hooks
             try:
                 invoke_hooks(
-                    self.gateway_hooks, "on_command_sent",
+                    self.gateway_hooks,
+                    "on_command_sent",
                     robot_id=target_robot.robot_id,
                     command=cmd_payload,
                 )
@@ -428,10 +436,12 @@ class MosoroGateway:
         asyncio.set_event_loop(self._loop)
 
         try:
-            self._loop.run_until_complete(asyncio.gather(
-                self._cleanup_loop(),
-                self._metrics_loop(),
-            ))
+            self._loop.run_until_complete(
+                asyncio.gather(
+                    self._cleanup_loop(),
+                    self._metrics_loop(),
+                )
+            )
         except KeyboardInterrupt:
             pass
         finally:

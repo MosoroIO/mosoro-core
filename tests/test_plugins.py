@@ -3,18 +3,18 @@
 
 """Tests for mosoro_core.plugins — Plugin discovery and management."""
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from fastapi import FastAPI
 
+from mosoro_core.plugin_types import MosoroPlugin
 from mosoro_core.plugins import (
+    ENTRY_POINT_GROUP,
     discover_plugins,
-    mount_plugin_routers,
     get_gateway_hooks,
     invoke_hooks,
-    ENTRY_POINT_GROUP,
+    mount_plugin_routers,
 )
-from mosoro_core.plugin_types import MosoroPlugin
 
 
 class TestDiscoverPlugins:

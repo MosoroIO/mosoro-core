@@ -22,7 +22,6 @@ Background MQTT subscriber that feeds fleet state into the API layer.
 Runs as an asyncio background task alongside the FastAPI server.
 """
 
-import asyncio
 import json
 import logging
 import os
@@ -125,11 +124,13 @@ class MQTTFleetSubscriber:
                     self._add_event(robot_id, payload, msg.topic)
 
                 # Notify WebSocket clients
-                self._notify_ws_clients({
-                    "type": msg_type,
-                    "robot_id": robot_id,
-                    "data": payload,
-                })
+                self._notify_ws_clients(
+                    {
+                        "type": msg_type,
+                        "robot_id": robot_id,
+                        "data": payload,
+                    }
+                )
 
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON on {msg.topic}: {e}")
@@ -147,15 +148,17 @@ class MQTTFleetSubscriber:
 
     def _add_event(self, robot_id: str, data: Dict[str, Any], topic: str):
         """Add an event to the event log."""
-        self._events.append({
-            "robot_id": robot_id,
-            "vendor": data.get("vendor", "unknown"),
-            "topic": topic,
-            "payload": data,
-            "received_at": time.time(),
-        })
+        self._events.append(
+            {
+                "robot_id": robot_id,
+                "vendor": data.get("vendor", "unknown"),
+                "topic": topic,
+                "payload": data,
+                "received_at": time.time(),
+            }
+        )
         if len(self._events) > self._max_events:
-            self._events = self._events[-self._max_events:]
+            self._events = self._events[-self._max_events :]
 
     def _notify_ws_clients(self, message: Dict[str, Any]):
         """Notify all registered WebSocket callbacks."""

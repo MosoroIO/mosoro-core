@@ -35,14 +35,13 @@ Run with:
 """
 
 import asyncio
-import json
 import logging
 import time
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.models import (
@@ -112,10 +111,12 @@ app.add_middleware(
 # Auth dependency (optional — import from security.auth when available)
 # ---------------------------------------------------------------------------
 
+
 def get_optional_auth():
     """Optional auth dependency. Returns None if auth module not available."""
     try:
         from security.auth import get_current_user
+
         return get_current_user
     except ImportError:
         return None
@@ -124,6 +125,7 @@ def get_optional_auth():
 # ---------------------------------------------------------------------------
 # Health Check
 # ---------------------------------------------------------------------------
+
 
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check():
@@ -140,6 +142,7 @@ async def health_check():
 # ---------------------------------------------------------------------------
 # Robot Endpoints
 # ---------------------------------------------------------------------------
+
 
 @app.get("/robots", response_model=FleetStatusResponse, tags=["Robots"])
 async def list_robots():
@@ -163,17 +166,19 @@ async def list_robots():
         position_data = payload.get("position")
         position = Position(**position_data) if position_data else None
 
-        robots.append(RobotStatusResponse(
-            robot_id=robot_id,
-            vendor=vendor,
-            status=robot_status,
-            position=position,
-            battery=payload.get("battery"),
-            health=payload.get("health"),
-            current_task=payload.get("current_task"),
-            last_updated=state.get("last_updated", 0),
-            is_online=True,
-        ))
+        robots.append(
+            RobotStatusResponse(
+                robot_id=robot_id,
+                vendor=vendor,
+                status=robot_status,
+                position=position,
+                battery=payload.get("battery"),
+                health=payload.get("health"),
+                current_task=payload.get("current_task"),
+                last_updated=state.get("last_updated", 0),
+                is_online=True,
+            )
+        )
 
     return FleetStatusResponse(
         total_robots=len(robots),
@@ -214,6 +219,7 @@ async def get_robot(robot_id: str):
 # ---------------------------------------------------------------------------
 # Task Endpoints
 # ---------------------------------------------------------------------------
+
 
 @app.post("/tasks", response_model=TaskAssignResponse, tags=["Tasks"])
 async def assign_task(request: TaskAssignRequest):
@@ -262,6 +268,7 @@ async def assign_task(request: TaskAssignRequest):
 # Events Endpoint
 # ---------------------------------------------------------------------------
 
+
 @app.get("/events", response_model=List[EventResponse], tags=["Events"])
 async def get_events(limit: int = 50):
     """Get recent fleet events."""
@@ -281,6 +288,7 @@ async def get_events(limit: int = 50):
 # ---------------------------------------------------------------------------
 # WebSocket for Real-Time Fleet Updates
 # ---------------------------------------------------------------------------
+
 
 @app.websocket("/ws/fleet")
 async def websocket_fleet(websocket: WebSocket):
@@ -303,10 +311,12 @@ async def websocket_fleet(websocket: WebSocket):
     try:
         # Send initial fleet state
         robots = mqtt_subscriber.get_all_robots()
-        await websocket.send_json({
-            "type": "initial_state",
-            "robots": {rid: state for rid, state in robots.items()},
-        })
+        await websocket.send_json(
+            {
+                "type": "initial_state",
+                "robots": {rid: state for rid, state in robots.items()},
+            }
+        )
 
         # Stream updates
         while True:
@@ -331,6 +341,7 @@ async def websocket_fleet(websocket: WebSocket):
 # Auth Endpoints (stub — uses security.auth when available)
 # ---------------------------------------------------------------------------
 
+
 @app.post("/auth/token", response_model=TokenResponse, tags=["Auth"])
 async def get_token(request: TokenRequest):
     """Get a JWT access token (stub for Phase 1)."""
@@ -339,9 +350,7 @@ async def get_token(request: TokenRequest):
 
         # Simple validation (replace with proper user store in production)
         if request.username == "admin" and request.password == "mosoro-admin":
-            token = create_access_token(
-                data={"sub": request.username, "role": "admin"}
-            )
+            token = create_access_token(data={"sub": request.username, "role": "admin"})
             return TokenResponse(
                 access_token=token,
                 token_type="bearer",

@@ -3,17 +3,15 @@
 
 """Shared test fixtures for Mosoro Core test suite."""
 
+from unittest.mock import MagicMock
+
 import pytest
-from datetime import datetime
-from unittest.mock import MagicMock, AsyncMock
 
 from mosoro_core.models import (
+    CurrentTask,
     MosoroMessage,
     MosoroPayload,
     Position,
-    MessageHeader,
-    CurrentTask,
-    ErrorDetail,
 )
 from mosoro_core.plugin_types import MosoroPlugin
 
@@ -101,11 +99,13 @@ def mock_plugin_with_hooks():
         hook_calls["on_message_received"].append({"topic": topic, "payload": payload})
 
     def on_rule(rule_name, trigger_message, action):
-        hook_calls["on_rule_matched"].append({
-            "rule_name": rule_name,
-            "trigger_message": trigger_message,
-            "action": action,
-        })
+        hook_calls["on_rule_matched"].append(
+            {
+                "rule_name": rule_name,
+                "trigger_message": trigger_message,
+                "action": action,
+            }
+        )
 
     def on_command(robot_id, command):
         hook_calls["on_command_sent"].append({"robot_id": robot_id, "command": command})

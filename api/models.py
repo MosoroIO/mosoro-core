@@ -21,28 +21,24 @@ Mosoro API Pydantic Models
 API-specific request/response models. Imports shared models from mosoro_core.
 """
 
-from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
 # Re-export shared models for convenience
 from mosoro_core.models import (
     CurrentTask,
-    ErrorDetail,
-    MessageHeader,
-    MosoroMessage,
-    MosoroPayload,
     Position,
 )
-
 
 # ---------------------------------------------------------------------------
 # API Response Models
 # ---------------------------------------------------------------------------
 
+
 class RobotStatusResponse(BaseModel):
     """API response for a single robot's status."""
+
     robot_id: str
     vendor: str
     status: Optional[str] = None
@@ -56,6 +52,7 @@ class RobotStatusResponse(BaseModel):
 
 class FleetStatusResponse(BaseModel):
     """API response for the entire fleet."""
+
     total_robots: int
     robots: List[RobotStatusResponse]
     by_vendor: Dict[str, int] = Field(default_factory=dict)
@@ -64,6 +61,7 @@ class FleetStatusResponse(BaseModel):
 
 class EventResponse(BaseModel):
     """API response for a fleet event."""
+
     robot_id: str
     vendor: str
     topic: str
@@ -75,8 +73,10 @@ class EventResponse(BaseModel):
 # API Request Models
 # ---------------------------------------------------------------------------
 
+
 class TaskAssignRequest(BaseModel):
     """Request to assign a task to a robot."""
+
     robot_id: str
     action: str = Field(..., description="Command action (e.g., 'move_to', 'pick', 'pause')")
     position: Optional[Position] = None
@@ -85,6 +85,7 @@ class TaskAssignRequest(BaseModel):
 
 class TaskAssignResponse(BaseModel):
     """Response after assigning a task."""
+
     success: bool
     message: str
     task_id: Optional[str] = None
@@ -95,14 +96,17 @@ class TaskAssignResponse(BaseModel):
 # Auth Models
 # ---------------------------------------------------------------------------
 
+
 class TokenRequest(BaseModel):
     """Request for an API token."""
+
     username: str
     password: str
 
 
 class TokenResponse(BaseModel):
     """Response with an API token."""
+
     access_token: str
     token_type: str = "bearer"
     expires_in: int
@@ -112,8 +116,10 @@ class TokenResponse(BaseModel):
 # Health Check
 # ---------------------------------------------------------------------------
 
+
 class HealthResponse(BaseModel):
     """API health check response."""
+
     status: str = "ok"
     version: str = "1.0"
     mqtt_connected: bool = False

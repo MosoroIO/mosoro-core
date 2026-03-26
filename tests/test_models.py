@@ -3,17 +3,17 @@
 
 """Tests for mosoro_core.models — MosoroMessage schema validation."""
 
-import pytest
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
 
 from mosoro_core.models import (
+    CurrentTask,
+    ErrorDetail,
     MosoroMessage,
     MosoroPayload,
     Position,
-    MessageHeader,
-    CurrentTask,
-    ErrorDetail,
 )
 
 
@@ -110,10 +110,7 @@ class TestMosoroMessage:
 
     def test_extra_fields_forbidden(self):
         with pytest.raises(ValidationError):
-            MosoroMessage(
-                robot_id="r1", vendor="locus", type="status",
-                extra_field="not_allowed"
-            )
+            MosoroMessage(robot_id="r1", vendor="locus", type="status", extra_field="not_allowed")
 
     def test_json_roundtrip(self, sample_message):
         json_str = sample_message.model_dump_json()

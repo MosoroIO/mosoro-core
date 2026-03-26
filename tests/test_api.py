@@ -3,8 +3,9 @@
 
 """Tests for api.main — FastAPI endpoint tests."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi.testclient import TestClient
 
 
@@ -24,6 +25,7 @@ def test_client():
         with patch("api.main.discover_plugins", return_value=[]):
             with patch("api.main.mount_plugin_routers"):
                 from api.main import app
+
                 client = TestClient(app)
                 yield client
 

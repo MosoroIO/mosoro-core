@@ -54,9 +54,9 @@ except ImportError:
 
 
 # Certificate validity period
-CA_VALIDITY_DAYS = 3650       # 10 years for CA
-CERT_VALIDITY_DAYS = 365      # 1 year for server/client certs
-KEY_SIZE = 4096               # RSA key size
+CA_VALIDITY_DAYS = 3650  # 10 years for CA
+CERT_VALIDITY_DAYS = 365  # 1 year for server/client certs
+KEY_SIZE = 4096  # RSA key size
 
 
 def generate_private_key() -> rsa.RSAPrivateKey:
@@ -71,12 +71,14 @@ def generate_ca_certificate(
     key: rsa.RSAPrivateKey,
 ) -> x509.Certificate:
     """Generate a self-signed CA certificate."""
-    subject = issuer = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "California"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Mosoro Inc."),
-        x509.NameAttribute(NameOID.COMMON_NAME, "Mosoro CA"),
-    ])
+    subject = issuer = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "California"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Mosoro Inc."),
+            x509.NameAttribute(NameOID.COMMON_NAME, "Mosoro CA"),
+        ]
+    )
 
     cert = (
         x509.CertificateBuilder()
@@ -86,8 +88,7 @@ def generate_ca_certificate(
         .serial_number(x509.random_serial_number())
         .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
         .not_valid_after(
-            datetime.datetime.now(datetime.timezone.utc)
-            + datetime.timedelta(days=CA_VALIDITY_DAYS)
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=CA_VALIDITY_DAYS)
         )
         .add_extension(
             x509.BasicConstraints(ca=True, path_length=0),
@@ -118,12 +119,14 @@ def generate_server_certificate(
     server_key: rsa.RSAPrivateKey,
 ) -> x509.Certificate:
     """Generate a server certificate signed by the CA."""
-    subject = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "California"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Mosoro Inc."),
-        x509.NameAttribute(NameOID.COMMON_NAME, "mosoro-mqtt"),
-    ])
+    subject = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "California"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Mosoro Inc."),
+            x509.NameAttribute(NameOID.COMMON_NAME, "mosoro-mqtt"),
+        ]
+    )
 
     cert = (
         x509.CertificateBuilder()
@@ -137,12 +140,14 @@ def generate_server_certificate(
             + datetime.timedelta(days=CERT_VALIDITY_DAYS)
         )
         .add_extension(
-            x509.SubjectAlternativeName([
-                x509.DNSName("localhost"),
-                x509.DNSName("mosquitto"),
-                x509.DNSName("mosoro-mqtt"),
-                x509.IPAddress(ipaddress.IPv4Address("127.0.0.1")),
-            ]),
+            x509.SubjectAlternativeName(
+                [
+                    x509.DNSName("localhost"),
+                    x509.DNSName("mosquitto"),
+                    x509.DNSName("mosoro-mqtt"),
+                    x509.IPAddress(ipaddress.IPv4Address("127.0.0.1")),
+                ]
+            ),
             critical=False,
         )
         .add_extension(
@@ -164,9 +169,11 @@ def generate_server_certificate(
             critical=True,
         )
         .add_extension(
-            x509.ExtendedKeyUsage([
-                x509.oid.ExtendedKeyUsageOID.SERVER_AUTH,
-            ]),
+            x509.ExtendedKeyUsage(
+                [
+                    x509.oid.ExtendedKeyUsageOID.SERVER_AUTH,
+                ]
+            ),
             critical=False,
         )
         .sign(ca_key, hashes.SHA256())
@@ -181,12 +188,14 @@ def generate_client_certificate(
     common_name: str,
 ) -> x509.Certificate:
     """Generate a client certificate signed by the CA (for mTLS)."""
-    subject = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "California"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Mosoro Inc."),
-        x509.NameAttribute(NameOID.COMMON_NAME, common_name),
-    ])
+    subject = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "California"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Mosoro Inc."),
+            x509.NameAttribute(NameOID.COMMON_NAME, common_name),
+        ]
+    )
 
     cert = (
         x509.CertificateBuilder()
@@ -218,9 +227,11 @@ def generate_client_certificate(
             critical=True,
         )
         .add_extension(
-            x509.ExtendedKeyUsage([
-                x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH,
-            ]),
+            x509.ExtendedKeyUsage(
+                [
+                    x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH,
+                ]
+            ),
             critical=False,
         )
         .sign(ca_key, hashes.SHA256())

@@ -31,16 +31,21 @@ from typing import Any, Callable, Dict, List, Optional, Protocol
 
 class OnMessageReceived(Protocol):
     """Hook called for every incoming MQTT message (read-only)."""
+
     def __call__(self, topic: str, payload: Dict[str, Any]) -> None: ...
 
 
 class OnRuleMatched(Protocol):
     """Hook called when a gateway rule fires."""
-    def __call__(self, rule_name: str, trigger_message: Dict[str, Any], action: Dict[str, Any]) -> None: ...
+
+    def __call__(
+        self, rule_name: str, trigger_message: Dict[str, Any], action: Dict[str, Any]
+    ) -> None: ...
 
 
 class OnCommandSent(Protocol):
     """Hook called when a command is published to a robot."""
+
     def __call__(self, robot_id: str, command: Dict[str, Any]) -> None: ...
 
 
@@ -48,14 +53,14 @@ class OnCommandSent(Protocol):
 class MosoroPlugin:
     """
     Plugin descriptor returned by each premium module's entry point.
-    
+
     All fields are optional — plugins implement only what they need.
-    
+
     Example usage in a premium module's __init__.py:
-        
+
         from mosoro_core.plugin_types import MosoroPlugin
         from my_plugin.router import router
-        
+
         def plugin() -> MosoroPlugin:
             return MosoroPlugin(
                 name="security-pro",
@@ -64,22 +69,23 @@ class MosoroPlugin:
                 mqtt_topics=["mosoro/v1/security/#"],
             )
     """
+
     name: str
     version: str = "0.0.0"
     description: str = ""
-    
+
     # FastAPI APIRouter instance (typed as Any to avoid hard FastAPI dependency)
     api_router: Optional[Any] = None
-    
+
     # Additional MQTT topics this plugin wants to subscribe to
     mqtt_topics: List[str] = field(default_factory=list)
-    
+
     # Gateway hook functions
     gateway_hooks: Dict[str, List[Callable]] = field(default_factory=dict)
-    
+
     def add_hook(self, event: str, handler: Callable) -> None:
         """Register a hook handler for a gateway event.
-        
+
         Supported events: 'on_message_received', 'on_rule_matched', 'on_command_sent'
         """
         if event not in self.gateway_hooks:

@@ -58,10 +58,15 @@ bearer_scheme = HTTPBearer(auto_error=False)
 # Rate limiter (in-memory, per robot_id or IP)
 # ---------------------------------------------------------------------------
 
+
 class RateLimiter:
     """Simple in-memory rate limiter per key (robot_id or IP)."""
 
-    def __init__(self, max_requests: int = RATE_LIMIT_REQUESTS, window_seconds: int = RATE_LIMIT_WINDOW_SECONDS):
+    def __init__(
+        self,
+        max_requests: int = RATE_LIMIT_REQUESTS,
+        window_seconds: int = RATE_LIMIT_WINDOW_SECONDS,
+    ):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self._requests: Dict[str, list] = defaultdict(list)
@@ -95,6 +100,7 @@ rate_limiter = RateLimiter()
 # ---------------------------------------------------------------------------
 # JWT token creation and validation
 # ---------------------------------------------------------------------------
+
 
 def create_access_token(
     data: Dict[str, Any],
@@ -163,6 +169,7 @@ def decode_token(token: str) -> Dict[str, Any]:
 # FastAPI dependencies
 # ---------------------------------------------------------------------------
 
+
 async def get_current_user(
     request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
@@ -182,7 +189,10 @@ async def get_current_user(
     if not rate_limiter.is_allowed(client_ip):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Rate limit exceeded. Max {RATE_LIMIT_REQUESTS} requests per {RATE_LIMIT_WINDOW_SECONDS}s.",
+            detail=(
+                f"Rate limit exceeded. Max {RATE_LIMIT_REQUESTS} "
+                f"requests per {RATE_LIMIT_WINDOW_SECONDS}s."
+            ),
         )
 
     if not credentials:

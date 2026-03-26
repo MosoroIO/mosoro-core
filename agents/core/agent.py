@@ -26,7 +26,7 @@ import signal
 import ssl
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional
 
 import yaml
 from paho.mqtt import client as mqtt
@@ -52,9 +52,9 @@ class MosoroEdgeAgent:
         self.mqtt_broker: str = os.environ.get(
             "MQTT_BROKER_HOST", self.config.get("mqtt_broker", "localhost")
         )
-        self.mqtt_port: int = int(os.environ.get(
-            "MQTT_BROKER_PORT", self.config.get("mqtt_port", 8883)
-        ))
+        self.mqtt_port: int = int(
+            os.environ.get("MQTT_BROKER_PORT", self.config.get("mqtt_port", 8883))
+        )
         self.mqtt_use_tls: bool = os.environ.get(
             "MQTT_USE_TLS", str(self.config.get("mqtt_use_tls", True))
         ).lower() in ("true", "1", "yes")
@@ -78,7 +78,9 @@ class MosoroEdgeAgent:
         try:
             with open(path, encoding="utf-8") as f:
                 config = yaml.safe_load(f)
-            logger.info(f"Loaded config for robot {config.get('robot_id')} ({config.get('vendor')})")
+            logger.info(
+                f"Loaded config for robot {config.get('robot_id')} ({config.get('vendor')})"
+            )
             return config
         except Exception as e:
             logger.error(f"Failed to load config from {path}: {e}")
@@ -89,12 +91,8 @@ class MosoroEdgeAgent:
         ca_cert = os.environ.get(
             "MQTT_CA_CERT", self.config.get("mqtt_ca_cert", "/run/secrets/mqtt_ca_cert")
         )
-        client_cert = os.environ.get(
-            "MQTT_CLIENT_CERT", self.config.get("mqtt_client_cert")
-        )
-        client_key = os.environ.get(
-            "MQTT_CLIENT_KEY", self.config.get("mqtt_client_key")
-        )
+        client_cert = os.environ.get("MQTT_CLIENT_CERT", self.config.get("mqtt_client_cert"))
+        client_key = os.environ.get("MQTT_CLIENT_KEY", self.config.get("mqtt_client_key"))
 
         try:
             self.client.tls_set(
@@ -164,10 +162,11 @@ class MosoroEdgeAgent:
 
                 # Find any class in the module that inherits from BaseMosoroAdapter
                 for name, obj in inspect.getmembers(module, inspect.isclass):
-                    if (issubclass(obj, BaseMosoroAdapter) and
-                        obj != BaseMosoroAdapter and
-                        name.lower().startswith(self.vendor)):
-
+                    if (
+                        issubclass(obj, BaseMosoroAdapter)
+                        and obj != BaseMosoroAdapter
+                        and name.lower().startswith(self.vendor)
+                    ):
                         adapter_instance = obj(self.robot_id, self.config)
                         logger.info(
                             "Loaded adapter '%s' for robot %s via filesystem.",
@@ -216,7 +215,7 @@ class MosoroEdgeAgent:
             robot_id=self.robot_id,
             vendor=self.vendor,
             type="birth",
-            payload=MosoroPayload(status="online", health="starting")
+            payload=MosoroPayload(status="online", health="starting"),
         )
         topic = f"mosoro/v1/agents/{self.robot_id}/birth"
         self.client.publish(topic, birth_msg.model_dump_json(), qos=1, retain=True)

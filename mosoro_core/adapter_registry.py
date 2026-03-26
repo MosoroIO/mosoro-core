@@ -95,6 +95,4 @@ def list_available_adapters() -> Dict[str, str]:
         Dict mapping vendor name to the fully qualified class name.
     """
     adapters = discover_adapters()
-    return {
-        name: f"{cls.__module__}.{cls.__qualname__}" for name, cls in adapters.items()
-    }
+    return {name: f"{cls.__module__}.{cls.__qualname__}" for name, cls in adapters.items()}

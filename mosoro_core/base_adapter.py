@@ -92,19 +92,18 @@ class BaseMosoroAdapter(ABC):
             raw_status = await self._fetch_robot_status()
 
             payload = MosoroPayload(
-                position=Position(**raw_status.get("position", {})) if raw_status.get("position") else None,
+                position=Position(**raw_status.get("position", {}))
+                if raw_status.get("position")
+                else None,
                 battery=raw_status.get("battery"),
                 status=raw_status.get("status"),
                 current_task=raw_status.get("current_task"),
                 health=raw_status.get("health"),
-                vendor_specific=raw_status.get("vendor_specific", {})
+                vendor_specific=raw_status.get("vendor_specific", {}),
             )
 
             return MosoroMessage(
-                robot_id=self.robot_id,
-                vendor=self.vendor,
-                type="status",
-                payload=payload
+                robot_id=self.robot_id, vendor=self.vendor, type="status", payload=payload
             )
 
         except Exception as e:
@@ -117,8 +116,8 @@ class BaseMosoroAdapter(ABC):
                 payload=MosoroPayload(
                     status="error",
                     health="unreachable",
-                    errors=[{"code": "FETCH_FAILED", "message": str(e)}]
-                )
+                    errors=[{"code": "FETCH_FAILED", "message": str(e)}],
+                ),
             )
 
     async def handle_command(self, raw_command: Dict[str, Any]) -> bool:

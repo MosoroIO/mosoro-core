@@ -30,7 +30,7 @@ Example entry point registration in a premium module's pyproject.toml:
 
 import logging
 from importlib.metadata import entry_points
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 from mosoro_core.plugin_types import MosoroPlugin
 
@@ -41,54 +41,57 @@ ENTRY_POINT_GROUP = "mosoro.plugins"
 
 def discover_plugins() -> List[MosoroPlugin]:
     """Scan for and load all registered Mosoro plugins.
-    
+
     Discovers plugins via Python entry points registered under
     the "mosoro.plugins" group. Each entry point should be a callable
     that returns a MosoroPlugin instance.
-    
+
     Returns:
         List of discovered MosoroPlugin instances.
         Broken plugins are logged and skipped.
     """
     plugins: List[MosoroPlugin] = []
-    
+
     discovered = entry_points(group=ENTRY_POINT_GROUP)
-    
+
     if not discovered:
         logger.info("No plugins discovered under '%s' entry point group.", ENTRY_POINT_GROUP)
         return plugins
-    
+
     for ep in discovered:
         try:
             logger.info("Loading plugin entry point: %s", ep.name)
             plugin_factory = ep.load()
             plugin = plugin_factory()
-            
+
             if not isinstance(plugin, MosoroPlugin):
                 logger.warning(
                     "Plugin '%s' returned %s instead of MosoroPlugin. Skipping.",
-                    ep.name, type(plugin).__name__
+                    ep.name,
+                    type(plugin).__name__,
                 )
                 continue
-            
+
             logger.info(
                 "Loaded plugin: %s v%s — %s",
-                plugin.name, plugin.version, plugin.description or "(no description)"
+                plugin.name,
+                plugin.version,
+                plugin.description or "(no description)",
             )
             plugins.append(plugin)
-            
+
         except Exception:
             logger.exception("Failed to load plugin '%s'. Skipping.", ep.name)
-    
+
     logger.info("Plugin discovery complete. %d plugin(s) loaded.", len(plugins))
     return plugins
 
 
 def mount_plugin_routers(app: Any, plugins: List[MosoroPlugin]) -> None:
     """Mount plugin FastAPI routers onto the main application.
-    
+
     Each plugin's router is mounted under /plugins/{plugin_name}/.
-    
+
     Args:
         app: The FastAPI application instance.
         plugins: List of discovered plugins.
@@ -104,29 +107,27 @@ def mount_plugin_routers(app: Any, plugins: List[MosoroPlugin]) -> None:
                 )
                 logger.info("Mounted plugin router: %s -> %s/*", plugin.name, prefix)
             except Exception:
-                logger.exception(
-                    "Failed to mount router for plugin '%s'. Skipping.", plugin.name
-                )
+                logger.exception("Failed to mount router for plugin '%s'. Skipping.", plugin.name)
 
 
 def get_gateway_hooks(plugins: List[MosoroPlugin]) -> Dict[str, List[Callable]]:
     """Collect all gateway hooks from discovered plugins.
-    
+
     Returns a dict mapping event names to lists of handler functions.
-    
+
     Supported events:
         - 'on_message_received': Called for every incoming MQTT message
         - 'on_rule_matched': Called when a gateway rule fires
         - 'on_command_sent': Called when a command is published to a robot
-    
+
     Args:
         plugins: List of discovered plugins.
-        
+
     Returns:
         Dict mapping event name -> list of handler callables.
     """
     hooks: Dict[str, List[Callable]] = {}
-    
+
     for plugin in plugins:
         for event, handlers in plugin.gateway_hooks.items():
             if event not in hooks:
@@ -134,9 +135,11 @@ def get_gateway_hooks(plugins: List[MosoroPlugin]) -> Dict[str, List[Callable]]:
             hooks[event].extend(handlers)
             logger.info(
                 "Registered %d hook(s) for '%s' from plugin '%s'.",
-                len(handlers), event, plugin.name
+                len(handlers),
+                event,
+                plugin.name,
             )
-    
+
     return hooks
 
 
@@ -146,10 +149,10 @@ def invoke_hooks(
     **kwargs: Any,
 ) -> None:
     """Safely invoke all registered hooks for a given event.
-    
+
     Each hook is called in a try/except block to prevent plugin errors
     from crashing the gateway or API.
-    
+
     Args:
         hooks: Dict of event -> handler lists (from get_gateway_hooks).
         event: The event name to invoke.
@@ -162,5 +165,6 @@ def invoke_hooks(
         except Exception:
             logger.exception(
                 "Error in plugin hook for event '%s' (handler: %s). Continuing.",
-                event, getattr(handler, "__qualname__", repr(handler))
+                event,
+                getattr(handler, "__qualname__", repr(handler)),
             )
