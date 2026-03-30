@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ */
+/* Light theme (default) — Mosoro brand colors                         */
+/* Primary: Coral #f15d66                                              */
+/* Secondary: Steel Blue #4c6584                                       */
+/* Accent: Tan #ddcaa4                                                 */
+/* ------------------------------------------------------------------ */
+:root {
+  --color-primary-50: #fef2f2;
+  --color-primary-100: #fde3e4;
+  --color-primary-200: #fccbcd;
+  --color-primary-300: #f9a3a8;
+  --color-primary-400: #f47a82;
+  --color-primary-500: #f15d66;
+  --color-primary-600: #d94550;
+  --color-primary-700: #b8333d;
+  --color-primary-800: #992d36;
+  --color-primary-900: #7f2a32;
+
+  --color-secondary-50: #f0f3f7;
+  --color-secondary-100: #dce3ec;
+  --color-secondary-200: #b9c7d9;
+  --color-secondary-300: #8da4be;
+  --color-secondary-400: #6b849f;
+  --color-secondary-500: #4c6584;
+  --color-secondary-600: #3d5270;
+  --color-secondary-700: #31425a;
+  --color-secondary-800: #283648;
+  --color-secondary-900: #212d3b;
+
+  --color-accent-50: #faf6ee;
+  --color-accent-100: #f3ebd6;
+  --color-accent-200: #e9dbb8;
+  --color-accent-300: #ddcaa4;
+  --color-accent-400: #d0b47e;
+  --color-accent-500: #c4a060;
+  --color-accent-600: #a98548;
+  --color-accent-700: #8c6b3a;
+  --color-accent-800: #735634;
+  --color-accent-900: #5f472e;
+
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f9fafb;
+  --color-surface-tertiary: #f3f4f6;
+  --color-border: #e5e7eb;
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #4c6584;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dark theme                                                          */
+/* ------------------------------------------------------------------ */
+.dark {
+  --color-primary-50: #3a1518;
+  --color-primary-100: #5c1f24;
+  --color-primary-200: #7f2a32;
+  --color-primary-300: #992d36;
+  --color-primary-400: #d94550;
+  --color-primary-500: #f15d66;
+  --color-primary-600: #f47a82;
+  --color-primary-700: #f9a3a8;
+  --color-primary-800: #fccbcd;
+  --color-primary-900: #fef2f2;
+
+  --color-secondary-50: #1a2230;
+  --color-secondary-100: #212d3b;
+  --color-secondary-200: #283648;
+  --color-secondary-300: #31425a;
+  --color-secondary-400: #3d5270;
+  --color-secondary-500: #4c6584;
+  --color-secondary-600: #6b849f;
+  --color-secondary-700: #8da4be;
+  --color-secondary-800: #b9c7d9;
+  --color-secondary-900: #dce3ec;
+
+  --color-accent-50: #2e2518;
+  --color-accent-100: #3d3120;
+  --color-accent-200: #5f472e;
+  --color-accent-300: #735634;
+  --color-accent-400: #a98548;
+  --color-accent-500: #ddcaa4;
+  --color-accent-600: #e9dbb8;
+  --color-accent-700: #f3ebd6;
+  --color-accent-800: #faf6ee;
+  --color-accent-900: #fdfbf6;
+
+  --color-surface: #0f172a;
+  --color-surface-secondary: #1e293b;
+  --color-surface-tertiary: #334155;
+  --color-border: #334155;
+
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-info: #6b849f;
+}
+
+/* ------------------------------------------------------------------ */
+/* Base styles                                                         */
+/* ------------------------------------------------------------------ */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-surface text-[var(--color-text-primary)] font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary-500;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Utility classes                                                     */
+/* ------------------------------------------------------------------ */
+@layer components {
+  .card {
+    @apply rounded-lg border border-border bg-surface p-4 shadow-sm;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2
+           text-sm font-medium transition-colors duration-150
+           focus-visible:outline-2 focus-visible:outline-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-500 text-white hover:bg-primary-600
+           focus-visible:outline-primary-500;
+  }
+
+  .btn-secondary {
+    @apply btn border border-border bg-surface hover:bg-surface-tertiary
+           text-[var(--color-text-primary)];
+  }
+
+  .btn-danger {
+    @apply btn bg-[var(--color-danger)] text-white hover:opacity-90;
+  }
+
+  .input {
+    @apply w-full rounded-md border border-border bg-surface px-3 py-2
+           text-sm text-[var(--color-text-primary)]
+           placeholder:text-[var(--color-text-muted)]
+           focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+           transition-colors duration-150;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-[var(--color-text-secondary)] mb-1;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+  }
+
+  .badge-warning {
+    @apply badge bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+  }
+
+  .badge-danger {
+    @apply badge bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
+  }
+
+  .badge-info {
+    @apply badge bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+
+  .badge-neutral {
+    @apply badge bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Scrollbar styling                                                   */
+/* ------------------------------------------------------------------ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* ------------------------------------------------------------------ */
+/* Animations                                                          */
+/* ------------------------------------------------------------------ */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
