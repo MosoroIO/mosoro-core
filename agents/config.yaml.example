@@ -24,7 +24,7 @@ robot_id: "locus-001"
 vendor: "locus"
 
 # Locus-specific settings
-api_base_url: "http://192.168.1.100:8080/api"
+api_base_url: "http://YOUR_LOCUS_HOST:8080/api"
 api_key: "your-locus-api-key-here"
 
 # Optional: Custom polling interval for this robot
@@ -38,8 +38,8 @@ api_key: "your-locus-api-key-here"
 # vendor: "stretch"
 
 # Stretch-specific settings (ROS 2 bridge or REST wrapper)
-# ros_bridge_url: "http://192.168.1.101:9090"
-# api_base_url: "http://192.168.1.101:5000"   # if using REST wrapper
+# ros_bridge_url: "http://YOUR_STRETCH_HOST:9090"
+# api_base_url: "http://YOUR_STRETCH_HOST:5000"   # if using REST wrapper
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ api_key: "your-locus-api-key-here"
 # vendor: "geekplus"
 
 # Geekplus-specific settings
-# api_base_url: "http://192.168.1.150:8080"
+# api_base_url: "http://YOUR_GEEKPLUS_HOST:8080"
 # api_key: "your-geekplus-api-key-here"
 
 
@@ -60,7 +60,7 @@ api_key: "your-locus-api-key-here"
 # vendor: "mir"
 
 # MiR-specific settings (REST API)
-# api_base_url: "http://192.168.1.200:8080"
+# api_base_url: "http://YOUR_MIR_HOST:8080"
 # username: "admin"
 # password: "your-mir-password"
 

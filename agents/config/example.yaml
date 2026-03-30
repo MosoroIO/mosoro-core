@@ -11,7 +11,7 @@ robot_id: "my-robot-001"
 vendor: "my_vendor"
 
 # Vendor-specific connection details
-api_base_url: "http://192.168.1.100:8080"
+api_base_url: "http://YOUR_ROBOT_HOST:8080"
 api_key: "your-api-key-here"
 
 # MQTT settings (production: TLS on port 8883)
