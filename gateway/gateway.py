@@ -455,10 +455,6 @@ class MosoroGateway:
 
 
 if __name__ == "__main__":
-    rules_path = (
-        sys.argv[1]
-        if len(sys.argv) > 1
-        else os.environ.get("RULES_PATH", "rules.yaml")
-    )
+    rules_path = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("RULES_PATH", "rules.yaml")
     gateway = MosoroGateway(rules_path=rules_path)
     gateway.run()

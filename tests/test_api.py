@@ -12,16 +12,17 @@ from fastapi.testclient import TestClient
 @pytest.fixture
 def test_client():
     """Create a test client with mocked MQTT dependencies."""
-    # Mock the MQTT subscriber before importing the app
-    with patch("api.main.MQTTSubscriber") as mock_sub_class:
-        mock_subscriber = MagicMock()
-        mock_subscriber.start = MagicMock()
-        mock_subscriber.stop = MagicMock()
-        mock_subscriber.fleet_store = {}
-        mock_subscriber.events = []
-        mock_sub_class.return_value = mock_subscriber
+    mock_subscriber = MagicMock()
+    mock_subscriber.start = MagicMock()
+    mock_subscriber.stop = MagicMock()
+    mock_subscriber.is_connected = False
+    mock_subscriber.get_fleet_size.return_value = 0
+    mock_subscriber.uptime = 0.0
+    mock_subscriber.get_all_robots.return_value = {}
+    mock_subscriber.get_recent_events.return_value = []
 
-        # Also mock plugin discovery to avoid side effects
+    # Patch the module-level mqtt_subscriber instance and plugin helpers
+    with patch("api.main.mqtt_subscriber", mock_subscriber):
         with patch("api.main.discover_plugins", return_value=[]):
             with patch("api.main.mount_plugin_routers"):
                 from api.main import app

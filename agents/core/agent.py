@@ -271,10 +271,6 @@ class MosoroEdgeAgent:
 
 
 if __name__ == "__main__":
-    config_path = (
-        sys.argv[1]
-        if len(sys.argv) > 1
-        else os.environ.get("CONFIG_PATH", "config.yaml")
-    )
+    config_path = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("CONFIG_PATH", "config.yaml")
     agent = MosoroEdgeAgent(config_path=config_path)
     agent.run()

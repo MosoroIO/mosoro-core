@@ -36,6 +36,7 @@ Run with:
 
 import asyncio
 import logging
+import os
 import time
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List
@@ -348,8 +349,17 @@ async def get_token(request: TokenRequest):
     try:
         from security.auth import JWT_EXPIRATION_MINUTES, create_access_token
 
-        # Simple validation (replace with proper user store in production)
-        if request.username == "admin" and request.password == "mosoro-admin":
+        # Validate credentials from environment variables
+        admin_username = os.environ.get("MOSORO_ADMIN_USERNAME", "admin")
+        admin_password = os.environ.get("MOSORO_ADMIN_PASSWORD")
+        if not admin_password:
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail=(
+                    "Admin password not configured. Set MOSORO_ADMIN_PASSWORD environment variable."
+                ),
+            )
+        if request.username == admin_username and request.password == admin_password:
             token = create_access_token(data={"sub": request.username, "role": "admin"})
             return TokenResponse(
                 access_token=token,
