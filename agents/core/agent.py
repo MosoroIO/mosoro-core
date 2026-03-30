@@ -1,4 +1,20 @@
 #!/usr/bin/env python3
+# Copyright 2026 Mosoro Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Mosoro Main Edge Agent with Auto-Discovery
 ==========================================
@@ -255,6 +271,10 @@ class MosoroEdgeAgent:
 
 
 if __name__ == "__main__":
-    config_path = sys.argv[1] if len(sys.argv) > 1 else "config.yaml"
+    config_path = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else os.environ.get("CONFIG_PATH", "config.yaml")
+    )
     agent = MosoroEdgeAgent(config_path=config_path)
     agent.run()

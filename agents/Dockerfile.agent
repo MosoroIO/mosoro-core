@@ -5,17 +5,27 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Build context is mosoro-core/ (set in docker-compose.dev.yml)
+COPY agents/requirements.txt agents/requirements.txt
+RUN pip install --no-cache-dir -r agents/requirements.txt
 
-COPY core/ core/
-COPY adapters/ adapters/
-COPY config.yaml.example config.yaml
+COPY agents/core/ agents/core/
+COPY agents/adapters/ agents/adapters/
+COPY agents/config.yaml.example agents/config.yaml
+
+# Install mosoro-core for adapter registry and models
+COPY pyproject.toml README.md NOTICE LICENSE ./
+COPY mosoro_core/ mosoro_core/
+RUN pip install --no-cache-dir -e .
+
+# Install community adapters if mounted (done at runtime via volumes in dev)
+# For production, uncomment and adjust:
+# COPY mosoro-adapters-community/ /tmp/adapters-community/
+# RUN pip install --no-cache-dir /tmp/adapters-community/
 
 # Non-root user for security
 RUN useradd -m mosoro && chown -R mosoro:mosoro /app
 USER mosoro
 
-# Note: mosoro_core/ is mounted via docker-compose volumes
-# or copied into the build context before building.
-CMD ["python", "-m", "core.agent"]
+# Note: agents/ and mosoro_core/ are mounted via docker-compose volumes in dev
+CMD ["python", "-m", "agents.core.agent"]

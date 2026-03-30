@@ -1,0 +1,19 @@
+# Copyright 2026 Mosoro Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install core package (gateway only needs base dependencies)
+COPY pyproject.toml README.md NOTICE LICENSE ./
+COPY mosoro_core/ mosoro_core/
+COPY gateway/ gateway/
+RUN pip install --no-cache-dir -e .
+
+# Non-root user for security
+RUN useradd -m mosoro && chown -R mosoro:mosoro /app
+USER mosoro
+
+# Note: gateway/ and mosoro_core/ are mounted via docker-compose volumes in dev
+CMD ["python", "-m", "gateway.gateway"]

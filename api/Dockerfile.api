@@ -1,0 +1,21 @@
+# Copyright 2026 Mosoro Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install core package with API + security dependencies
+COPY pyproject.toml README.md NOTICE LICENSE ./
+COPY mosoro_core/ mosoro_core/
+COPY api/ api/
+COPY security/ security/
+RUN pip install --no-cache-dir -e ".[api,security]"
+
+# Non-root user for security
+RUN useradd -m mosoro && chown -R mosoro:mosoro /app
+USER mosoro
+
+# Note: api/ and mosoro_core/ are mounted via docker-compose volumes in dev
+EXPOSE 8000
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -183,15 +183,19 @@ class MosoroGateway:
 
             ssl_context = create_ssl_context(ca_cert, client_cert, client_key)
             self.client.tls_set_context(ssl_context)
-            logger.info("Gateway TLS configured")
+            logger.info("Gateway TLS configured via security module")
         except ImportError:
             logger.warning("security.mqtt_tls not available, using basic TLS")
             import ssl
 
             ca_cert = os.environ.get("MQTT_CA_CERT", "/run/secrets/mqtt_ca_cert")
-            self.client.tls_set(ca_certs=ca_cert, tls_version=ssl.PROTOCOL_TLS_CLIENT)
+            try:
+                self.client.tls_set(ca_certs=ca_cert, tls_version=ssl.PROTOCOL_TLS_CLIENT)
+            except FileNotFoundError as e:
+                logger.warning("TLS cert not found: %s. Falling back to non-TLS.", e)
+                self.use_tls = False
         except FileNotFoundError as e:
-            logger.warning(f"TLS cert not found: {e}. Falling back to non-TLS.")
+            logger.warning("TLS cert not found: %s. Falling back to non-TLS.", e)
             self.use_tls = False
 
     def _on_connect(self, client, userdata, flags, rc):
@@ -451,6 +455,10 @@ class MosoroGateway:
 
 
 if __name__ == "__main__":
-    rules_path = sys.argv[1] if len(sys.argv) > 1 else "rules.yaml"
+    rules_path = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else os.environ.get("RULES_PATH", "rules.yaml")
+    )
     gateway = MosoroGateway(rules_path=rules_path)
     gateway.run()
