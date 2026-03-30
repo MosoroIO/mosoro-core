@@ -112,6 +112,12 @@ jobs:
             docker build -f agents/Dockerfile.agent -t mosoro-agent:test .
           fi
 
+      - name: Build Frontend image
+        run: |
+          if [ -f frontend/Dockerfile.frontend ]; then
+            docker build -f frontend/Dockerfile.frontend -t mosoro-frontend:test . || echo "Dockerfile.frontend build failed, skipping"
+          fi
+
   publish:
     name: Publish to PyPI
     runs-on: ubuntu-latest

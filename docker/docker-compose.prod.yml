@@ -72,6 +72,28 @@ services:
       - mqtt_ca_cert
 
   # ============================================================================
+  # Frontend Dashboard
+  # ============================================================================
+  frontend:
+    build: ../frontend
+    container_name: mosoro-frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://api:8000
+    networks:
+      - mosoro-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/nginx-health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ============================================================================
   # Edge Agents - Production Configuration
   # ============================================================================
 

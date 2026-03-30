@@ -32,11 +32,24 @@ docker/mosquitto/passwordfile
 
 # Environment files
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 
 # Docker
 docker-compose.override.yml
+
+# Linter cache
+.ruff_cache/
+
+# Node.js (frontend)
+node_modules/
+
+# Secret/key files (NEVER commit)
+*.secret
+*.key
+*.pem
+!certs/*.key
+!certs/*.pem
 
 # Test artifacts
 .pytest_cache/
@@ -56,5 +69,6 @@ plans/mosoro-workspace-strategy.md
 plans/workspace-implementation-plan.md
 plans/mosoro-core-readiness.md
 
-# Additional certificate formats
-certs/*.pem
+# Additional certificate directory contents
+certs/*
+!certs/.gitkeep

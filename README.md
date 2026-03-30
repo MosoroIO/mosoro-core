@@ -1,8 +1,9 @@
-[![CI](https://github.com/mosoro/mosoro-core/actions/workflows/ci.yml/badge.svg)](https://github.com/mosoro/mosoro-core/actions/workflows/ci.yml)
-[![PyPI version](https://badge.fury.io/py/mosoro-core.svg)](https://badge.fury.io/py/mosoro-core)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 # Mosoro
+
+[![CI](https://github.com/mosoroio/mosoro-core/actions/workflows/ci.yml/badge.svg)](https://github.com/mosoroio/mosoro-core/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/mosoro-core)](https://pypi.org/project/mosoro-core/)
+[![Python](https://img.shields.io/pypi/pyversions/mosoro-core)](https://pypi.org/project/mosoro-core/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 **The neutral bridge for multi-vendor warehouse robot fleets.**
 
@@ -303,7 +304,7 @@ By contributing, you agree that your contribution is licensed under the Apache L
 - Dashboard improvements
 - Documentation and translations
 
-For security-related issues, please contact security@mosoro.com instead of opening a public issue.
+For security-related issues, please contact security@mosoro.io instead of opening a public issue.
 
 ---
 
@@ -320,5 +321,5 @@ Mosoro core is open source under Apache License 2.0. Premium features and hosted
 ## Contact
 
 - **Website:** https://mosoro.com
-- **GitHub:** https://github.com/mosoro
-- **Founder:** info@mosoro.com
+- **GitHub:** https://github.com/mosoroio
+- **Founder:** info@mosoro.io
