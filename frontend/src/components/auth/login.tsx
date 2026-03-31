@@ -93,7 +93,15 @@ function Login() {
         </form>
 
         <p className="mt-4 text-center text-xs text-[var(--color-text-muted)]">
-          Mosoro Communications Platform
+          ©️ 2026 Mosoro - All rights reserved. Learn more at{" "}
+          <a
+            href="https://mosoro.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-500 hover:underline"
+          >
+            https://mosoro.com
+          </a>
         </p>
       </div>
     </div>
