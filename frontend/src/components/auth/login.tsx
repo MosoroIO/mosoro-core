@@ -28,8 +28,8 @@ function Login() {
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-500 text-white text-2xl font-bold">
-            M
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-500">
+            <img src="/mosoro-icon.svg" alt="Mosoro" className="h-10 w-10" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
             Mosoro Dashboard
