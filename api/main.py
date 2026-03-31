@@ -312,10 +312,7 @@ async def websocket_fleet(websocket: WebSocket):
     try:
         # Send initial fleet state as a proper FleetStatusResponse
         robots = mqtt_subscriber.get_all_robots()
-        robot_list = [
-            mqtt_subscriber._state_to_response(state)
-            for state in robots.values()
-        ]
+        robot_list = [mqtt_subscriber._state_to_response(state) for state in robots.values()]
         by_vendor: Dict[str, int] = {}
         by_status: Dict[str, int] = {}
         for r in robot_list:

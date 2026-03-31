@@ -357,7 +357,9 @@ def tick_robot(robot: VirtualRobot) -> List[Dict[str, Any]]:
             robot.status = "idle"
             robot.health = "nominal"
             messages.append(
-                build_event_message(robot, "charging_complete", {"battery": round(robot.battery, 1)})
+                build_event_message(
+                    robot, "charging_complete", {"battery": round(robot.battery, 1)}
+                )
             )
             logger.info("%s finished charging (battery=%.1f%%)", robot.robot_id, robot.battery)
 
@@ -553,7 +555,9 @@ def create_fleet() -> List[VirtualRobot]:
 def _on_connect(client: mqtt.Client, userdata: Any, flags: Any, rc: int) -> None:
     """MQTT on_connect callback."""
     if rc == 0:
-        logger.info("Simulator connected to MQTT broker at %s:%d", MQTT_BROKER_HOST, MQTT_BROKER_PORT)
+        logger.info(
+            "Simulator connected to MQTT broker at %s:%d", MQTT_BROKER_HOST, MQTT_BROKER_PORT
+        )
     else:
         logger.error("Simulator failed to connect to MQTT broker (rc=%d)", rc)
 

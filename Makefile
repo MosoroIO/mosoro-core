@@ -1,7 +1,7 @@
 # Mosoro Core — Makefile
 # ============================================================================
 
-.PHONY: help setup add-robot demo up down logs clean
+.PHONY: help setup add-robot demo up down logs clean lint fmt fmt-check
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -27,3 +27,12 @@ logs:  ## Tail logs for all services
 
 clean:  ## Stop and remove volumes
 	docker compose -f docker-compose.yml -f docker-compose.demo.yml down -v
+
+lint:  ## Run ruff linter (matches CI)
+	ruff check .
+
+fmt:  ## Auto-format code with ruff (run before committing)
+	ruff format .
+
+fmt-check:  ## Check formatting without modifying files (matches CI)
+	ruff format --check .

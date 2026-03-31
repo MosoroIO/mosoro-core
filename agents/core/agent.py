@@ -65,6 +65,7 @@ logger = logging.getLogger("mosoro.agent")
 # robots.yaml loader
 # ---------------------------------------------------------------------------
 
+
 def load_robots_yaml(path: Optional[str] = None) -> Optional[List[Dict[str, Any]]]:
     """Load robot configurations from a robots.yaml file.
 
