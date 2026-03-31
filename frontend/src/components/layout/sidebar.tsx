@@ -9,6 +9,7 @@ import {
   Map,
   ListTodo,
   TicketCheck,
+  Puzzle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -24,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/map", label: "Map", icon: Map },
   { to: "/tasks", label: "Tasks", icon: ListTodo },
   { to: "/events", label: "Events", icon: TicketCheck },
+  { to: "/extensions", label: "Extensions", icon: Puzzle },
 ];
 
 interface SidebarProps {

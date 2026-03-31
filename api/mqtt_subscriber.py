@@ -120,17 +120,28 @@ class MQTTFleetSubscriber:
 
                 if msg_type in ("status", "birth"):
                     self._update_robot_state(robot_id, payload)
+                    # Notify WebSocket clients with a properly structured robot_update
+                    state = self._robots.get(robot_id, {})
+                    self._notify_ws_clients(
+                        {
+                            "type": "robot_update",
+                            "data": self._state_to_response(state),
+                        }
+                    )
                 elif msg_type == "events":
                     self._add_event(robot_id, payload, msg.topic)
-
-                # Notify WebSocket clients
-                self._notify_ws_clients(
-                    {
-                        "type": msg_type,
-                        "robot_id": robot_id,
-                        "data": payload,
-                    }
-                )
+                    self._notify_ws_clients(
+                        {
+                            "type": "event",
+                            "data": {
+                                "robot_id": robot_id,
+                                "vendor": payload.get("vendor", "unknown"),
+                                "topic": msg.topic,
+                                "payload": payload,
+                                "received_at": time.time(),
+                            },
+                        }
+                    )
 
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON on {msg.topic}: {e}")
@@ -144,6 +155,23 @@ class MQTTFleetSubscriber:
             "vendor": data.get("vendor", "unknown"),
             "data": data,
             "last_updated": time.time(),
+        }
+
+    @staticmethod
+    def _state_to_response(state: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert internal robot state dict to RobotStatusResponse-compatible dict."""
+        inner = state.get("data", {})
+        payload = inner.get("payload", {})
+        return {
+            "robot_id": state.get("robot_id", "unknown"),
+            "vendor": state.get("vendor", "unknown"),
+            "status": payload.get("status"),
+            "position": payload.get("position"),
+            "battery": payload.get("battery"),
+            "health": payload.get("health"),
+            "current_task": payload.get("current_task"),
+            "last_updated": state.get("last_updated", 0),
+            "is_online": True,
         }
 
     def _add_event(self, robot_id: str, data: Dict[str, Any], topic: str):

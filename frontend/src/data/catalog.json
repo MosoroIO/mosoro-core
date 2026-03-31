@@ -1,0 +1,106 @@
+{
+  "version": "1.0",
+  "categories": [
+    {
+      "id": "robots",
+      "name": "Robots",
+      "icon": "🤖",
+      "description": "Connect to robot vendors"
+    },
+    {
+      "id": "platform",
+      "name": "Platform Features",
+      "icon": "🛡️",
+      "description": "Premium capabilities"
+    }
+  ],
+  "extensions": [
+    {
+      "id": "locus",
+      "name": "Locus Robotics AMR",
+      "category": "robots",
+      "version": "1.0.0",
+      "tier": "free",
+      "package": "mosoro-adapter-locus",
+      "description": "Connect to Locus Robotics AMRs via REST API",
+      "connection_type": "REST API",
+      "config_fields": [
+        {"name": "api_base_url", "label": "Robot IP or hostname", "type": "host", "default_port": 8080, "path_suffix": "/api"},
+        {"name": "api_key", "label": "API key", "type": "secret"}
+      ],
+      "new": false
+    },
+    {
+      "id": "mir",
+      "name": "MiR Mobile Industrial Robots",
+      "category": "robots",
+      "version": "1.0.0",
+      "tier": "free",
+      "package": "mosoro-adapter-mir",
+      "description": "Connect to MiR robots via REST API with Basic Auth",
+      "connection_type": "REST API (Basic Auth)",
+      "config_fields": [
+        {"name": "api_base_url", "label": "Robot IP or hostname", "type": "host", "default_port": 8080},
+        {"name": "username", "label": "Username", "type": "text", "default": "admin"},
+        {"name": "password", "label": "Password", "type": "secret"}
+      ],
+      "new": false
+    },
+    {
+      "id": "fetch",
+      "name": "Fetch Robotics (Zebra)",
+      "category": "robots",
+      "version": "1.0.0",
+      "tier": "free",
+      "package": "mosoro-adapter-fetch",
+      "description": "Connect to Fetch/FetchCore robots via REST API",
+      "connection_type": "REST API",
+      "config_fields": [
+        {"name": "api_base_url", "label": "Robot IP or hostname", "type": "host", "default_port": 8080},
+        {"name": "api_key", "label": "API key", "type": "secret"}
+      ],
+      "new": false
+    },
+    {
+      "id": "geekplus",
+      "name": "Geekplus / Seer AMR",
+      "category": "robots",
+      "version": "1.0.0",
+      "tier": "free",
+      "package": "mosoro-adapter-geekplus",
+      "description": "Connect to Geekplus/Seer AMRs via REST API",
+      "connection_type": "REST API",
+      "config_fields": [
+        {"name": "api_base_url", "label": "Robot IP or hostname", "type": "host", "default_port": 8080},
+        {"name": "api_key", "label": "API key", "type": "secret"}
+      ],
+      "new": false
+    },
+    {
+      "id": "stretch",
+      "name": "Boston Dynamics Stretch",
+      "category": "robots",
+      "version": "1.0.0",
+      "tier": "free",
+      "package": "mosoro-adapter-stretch",
+      "description": "Connect to Stretch robots via ROS 2 rosbridge",
+      "connection_type": "ROS 2 Bridge",
+      "config_fields": [
+        {"name": "rosbridge_host", "label": "Stretch IP or hostname", "type": "host", "default_port": 9090},
+        {"name": "map_id", "label": "Map identifier", "type": "text", "default": "warehouse_map_01"}
+      ],
+      "new": false
+    },
+    {
+      "id": "mosoro-pro-preview",
+      "name": "Mosoro Pro — Coming Soon",
+      "category": "platform",
+      "version": "0.0.0",
+      "tier": "premium",
+      "package": "mosoro-pro",
+      "description": "Premium platform capabilities are in development. Join the waitlist to get early access when they launch.",
+      "contact_url": "https://mosoro.io/waitlist",
+      "new": true
+    }
+  ]
+}

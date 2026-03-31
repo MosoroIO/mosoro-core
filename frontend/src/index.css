@@ -123,6 +123,21 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Smooth dark mode transition */
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: ease;
+    transition-duration: 0ms;
+  }
+
+  .dark-mode-transition *,
+  .dark-mode-transition *::before,
+  .dark-mode-transition *::after {
+    transition-duration: 200ms;
+  }
+
   *:focus-visible {
     @apply outline-2 outline-offset-2 outline-primary-500;
   }
@@ -244,4 +259,56 @@
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+/* ------------------------------------------------------------------ */
+/* Skeleton shimmer animation                                          */
+/* ------------------------------------------------------------------ */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-tertiary) 25%,
+    var(--color-border) 50%,
+    var(--color-surface-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+/* Dark mode skeleton shimmer */
+.dark .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-tertiary) 25%,
+    #475569 50%,
+    var(--color-surface-tertiary) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* ------------------------------------------------------------------ */
+/* Touch-friendly tap targets                                          */
+/* ------------------------------------------------------------------ */
+@media (max-width: 767px) {
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .input,
+  select.input {
+    min-height: 44px;
+  }
 }

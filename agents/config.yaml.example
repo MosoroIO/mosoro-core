@@ -1,94 +1,37 @@
-# =============================================================================
-# Mosoro Edge Agent Configuration Example
-# =============================================================================
-# This file demonstrates configuration for multiple robot vendors.
-# Copy this file to config.yaml and modify for your specific robot.
-# =============================================================================
+# Mosoro Edge Agent Configuration (Single-Robot / Legacy Mode)
+# =============================================================
+#
+# This file is used as the default config.yaml when no robots.yaml is found
+# and no CONFIG_PATH environment variable is set.
+#
+# For multi-robot setups, prefer robots.yaml instead.
+# See: mosoro-core/robots.yaml.example
+#
+# Tip: Use `make setup` in mosoro-core to configure this automatically.
 
-# ============================================================================
-# Common Settings (apply to all robots)
-# ============================================================================
-mqtt_broker: "localhost"          # Change to your Mosoro gateway IP or hostname
-mqtt_port: 1883
-poll_interval: 5.0                # Seconds between status polls (adjust as needed)
-
-# ============================================================================
-# Robot-Specific Configuration
-# Choose ONE section below and comment out the others
-# ============================================================================
-
-# ────────────────────────────────────────────────────────────────────────────
-# Example 1: Locus Robotics AMR
-# ────────────────────────────────────────────────────────────────────────────
+# --- Robot Identity ---
 robot_id: "locus-001"
 vendor: "locus"
 
-# Locus-specific settings
-api_base_url: "http://YOUR_LOCUS_HOST:8080/api"
-api_key: "your-locus-api-key-here"
+# --- Vendor-Specific Connection Details ---
+# Adjust these for your robot vendor (locus, mir, fetch, geekplus, stretch, etc.)
+api_base_url: "http://localhost:8080/api"
+api_key: "your-api-key-here"
 
-# Optional: Custom polling interval for this robot
-# poll_interval: 3.0
+# --- MQTT Broker Settings ---
+# These can be overridden by environment variables:
+#   MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_USE_TLS
+mqtt_broker: "localhost"
+mqtt_port: 1883
+mqtt_use_tls: false
 
+# TLS / mTLS certificates (uncomment for production)
+# mqtt_ca_cert: "/run/secrets/mqtt_ca_cert"
+# mqtt_client_cert: "/certs/locus-001.crt"
+# mqtt_client_key: "/certs/locus-001.key"
 
-# ────────────────────────────────────────────────────────────────────────────
-# Example 2: Boston Dynamics Stretch
-# ────────────────────────────────────────────────────────────────────────────
-# robot_id: "stretch-001"
-# vendor: "stretch"
-
-# Stretch-specific settings (ROS 2 bridge or REST wrapper)
-# ros_bridge_url: "http://YOUR_STRETCH_HOST:9090"
-# api_base_url: "http://YOUR_STRETCH_HOST:5000"   # if using REST wrapper
-
-
-# ────────────────────────────────────────────────────────────────────────────
-# Example 3: Geekplus / Seer AMR
-# ────────────────────────────────────────────────────────────────────────────
-# robot_id: "geekplus-001"
-# vendor: "geekplus"
-
-# Geekplus-specific settings
-# api_base_url: "http://YOUR_GEEKPLUS_HOST:8080"
-# api_key: "your-geekplus-api-key-here"
-
-
-# ────────────────────────────────────────────────────────────────────────────
-# Example 4: MiR (Mobile Industrial Robots)
-# ────────────────────────────────────────────────────────────────────────────
-# robot_id: "mir-001"
-# vendor: "mir"
-
-# MiR-specific settings (REST API)
-# api_base_url: "http://YOUR_MIR_HOST:8080"
-# username: "admin"
-# password: "your-mir-password"
-
-
-# ============================================================================
-# Advanced / Optional Settings
-# ============================================================================
-
-# Logging level (DEBUG, INFO, WARNING, ERROR)
-log_level: "INFO"
-
-# Enable health endpoint (optional local HTTP server)
-enable_health_endpoint: true
-health_port: 8080
-
-# Timeout for robot API calls (seconds)
+# --- Polling & Operational Settings ---
+poll_interval: 5.0
+log_level: "DEBUG"
 api_timeout: 10.0
-
-# Maximum retries for failed API calls
 max_retries: 3
-
-# ============================================================================
-# Notes for Users / Contributors
-# ============================================================================
-# 1. Only enable ONE robot configuration at a time.
-# 2. When adding a new vendor, create a new section with:
-#    - robot_id
-#    - vendor (must match the adapter class name, lowercase)
-#    - vendor-specific keys (api_base_url, api_key, etc.)
-# 3. The main agent will auto-discover the correct adapter based on "vendor".
-# 4. For production, use environment variables or Docker secrets for sensitive keys.

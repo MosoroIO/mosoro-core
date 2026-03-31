@@ -1,0 +1,38 @@
+# =============================================================================
+# Mosoro MQTT ACL — Demo / Development Mode (v1.6)
+# =============================================================================
+#
+# This ACL is used when allow_anonymous=true and no password_file is active.
+# All clients connect without credentials, so "user" directives cannot
+# differentiate them. Instead we use bare "topic" rules that apply to every
+# connected client.
+#
+# Security posture:
+#   - ALLOW read/write on the mosoro/v1/# application namespace only
+#   - ALLOW publish to "healthcheck" (used by Docker healthcheck probe)
+#   - DENY everything else (implicit — Mosquitto denies any topic not
+#     matched by a rule when an acl_file is loaded)
+#
+# This file is mounted ONLY by docker-compose.demo.yml, overriding the
+# production aclfile. Production deployments use the stricter user-based
+# aclfile with password authentication.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Healthcheck — Docker healthcheck publishes an empty message here
+# ---------------------------------------------------------------------------
+topic readwrite healthcheck
+
+# ---------------------------------------------------------------------------
+# Mosoro application namespace — all internal services communicate here
+#   - Simulator publishes:  mosoro/v1/agents/+/status, /events, /birth
+#   - Gateway reads/writes: mosoro/v1/#
+#   - API subscribes:       mosoro/v1/agents/+/status, /events, /birth
+#   - Agents publish:       mosoro/v1/agents/{id}/#
+# ---------------------------------------------------------------------------
+topic readwrite mosoro/v1/#
+
+# ---------------------------------------------------------------------------
+# Everything else is implicitly denied by Mosquitto when acl_file is set.
+# No client can subscribe to $SYS/#, #, or any topic outside the above.
+# ---------------------------------------------------------------------------

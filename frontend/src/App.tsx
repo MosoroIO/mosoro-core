@@ -8,10 +8,12 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
+import { Toaster } from "sonner";
 import { AppLayout } from "./components/layout/app-layout";
 import { AuthProvider, useAuthContext } from "./context/auth-context";
 import { ThemeProvider } from "./context/theme-context";
 import { useFleetWebSocket } from "./hooks/use-websocket";
+import { CommandPalette } from "./components/command-palette/command-palette";
 
 import { DashboardPage } from "./pages/dashboard-page";
 import { RobotsPage } from "./pages/robots-page";
@@ -19,6 +21,7 @@ import { RobotDetailPage } from "./pages/robot-detail-page";
 import { MapPage } from "./pages/map-page";
 import { TasksPage } from "./pages/tasks-page";
 import { EventsPage } from "./pages/events-page";
+import { ExtensionsPage } from "./pages/extensions-page";
 import { LoginPage } from "./pages/login-page";
 import type { ReactNode } from "react";
 
@@ -71,6 +74,7 @@ function AuthenticatedApp() {
           element={<TasksPage fleetData={fleetData} />}
         />
         <Route path="events" element={<EventsPage />} />
+        <Route path="extensions" element={<ExtensionsPage />} />
       </Route>
     </Routes>
   );
@@ -96,6 +100,14 @@ function App() {
               }
             />
           </Routes>
+          <CommandPalette />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className:
+                "bg-surface border border-border text-[var(--color-text-primary)] shadow-lg",
+            }}
+          />
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

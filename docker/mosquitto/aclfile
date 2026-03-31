@@ -1,4 +1,8 @@
 # Mosoro v1.5 ACL - Least Privilege
+# =============================================================================
+# Production ACL — requires password_file and authenticated usernames.
+# For dev/demo mode, use aclfile.demo instead (mounted via docker-compose.demo.yml).
+# =============================================================================
 
 user gateway
 topic readwrite mosoro/v1/#

@@ -1,0 +1,105 @@
+# Mosoro Core — Self-Contained Development Stack
+# Usage: docker compose up --build
+#
+# Services: mosquitto, gateway, api, frontend
+# All environment variables have defaults — no .env file required.
+
+services:
+  # ============================================================================
+  # Mosquitto MQTT Broker (plain MQTT, no TLS for dev/demo)
+  # ============================================================================
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosoro-mqtt
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./docker/mosquitto/aclfile:/mosquitto/config/aclfile:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -t 'healthcheck' -n -i healthcheck-pub || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - mosoro-net
+
+  # ============================================================================
+  # Central Gateway
+  # ============================================================================
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile.gateway
+    container_name: mosoro-gateway
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      MQTT_BROKER_PORT: "1883"
+      MQTT_USE_TLS: "false"
+      RULES_PATH: /app/gateway/rules.yaml.example
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+    volumes:
+      - ./gateway:/app/gateway:ro
+      - ./mosoro_core:/app/mosoro_core:ro
+    networks:
+      - mosoro-net
+
+  # ============================================================================
+  # Unified API
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile.api
+    container_name: mosoro-api
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      gateway:
+        condition: service_started
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      MQTT_BROKER_PORT: "1883"
+      MQTT_USE_TLS: "false"
+      MOSORO_ADMIN_USERNAME: "${MOSORO_ADMIN_USERNAME:-admin}"
+      MOSORO_ADMIN_PASSWORD: "${MOSORO_ADMIN_PASSWORD:-changeme-dev}"
+      MOSORO_JWT_SECRET: "${MOSORO_JWT_SECRET:-dev-secret-change-in-production-min-32-chars}"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+    volumes:
+      - ./api:/app/api:ro
+      - ./mosoro_core:/app/mosoro_core:ro
+      - ./security:/app/security:ro
+    networks:
+      - mosoro-net
+
+  # ============================================================================
+  # Frontend Dashboard
+  # ============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: mosoro-frontend
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    networks:
+      - mosoro-net
+
+networks:
+  mosoro-net:
+    driver: bridge
+
+volumes:
+  mosquitto-data:
+  mosquitto-log:

@@ -13,3 +13,11 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier: Apache-2.0
+
+"""
+Mosoro Virtual Fleet Simulator
+===============================
+
+Publishes simulated MosoroMessage data for 3 virtual robots to MQTT,
+enabling zero-configuration demo mode.
+"""

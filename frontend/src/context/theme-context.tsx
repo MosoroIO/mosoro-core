@@ -42,12 +42,23 @@ function ThemeProvider({ children }: ThemeProviderProps) {
 
   const applyTheme = useCallback((t: Theme) => {
     const root = document.documentElement;
+
+    // Enable smooth transition for theme toggle
+    root.classList.add("dark-mode-transition");
+
     if (t === "dark") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
     }
     localStorage.setItem(THEME_KEY, t);
+
+    // Remove transition class after animation completes
+    const timer = setTimeout(() => {
+      root.classList.remove("dark-mode-transition");
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {

@@ -46,10 +46,6 @@ node_modules/
 
 # Secret/key files (NEVER commit)
 *.secret
-*.key
-*.pem
-!certs/*.key
-!certs/*.pem
 
 # Test artifacts
 .pytest_cache/

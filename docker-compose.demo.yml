@@ -1,0 +1,37 @@
+# Mosoro Core — Demo Mode Overlay
+# Usage: docker compose -f docker-compose.yml -f docker-compose.demo.yml up --build
+#
+# Adds the virtual fleet simulator on top of the base stack.
+# Three simulated robots publish live data to the dashboard.
+
+services:
+  # ============================================================================
+  # Mosquitto override — swap in the demo ACL (allow_anonymous, no passwords)
+  # ============================================================================
+  mosquitto:
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./docker/mosquitto/aclfile.demo:/mosquitto/config/aclfile:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+
+  # ============================================================================
+  # Virtual Fleet Simulator — 3 robots, zero configuration
+  # ============================================================================
+  simulator:
+    build:
+      context: .
+      dockerfile: simulator/Dockerfile.simulator
+    container_name: mosoro-simulator
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      MQTT_BROKER_PORT: "1883"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      SIM_INTERVAL_MIN: "3.0"
+      SIM_INTERVAL_MAX: "5.0"
+    restart: unless-stopped
+    networks:
+      - mosoro-net
