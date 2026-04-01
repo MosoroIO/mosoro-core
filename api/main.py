@@ -270,6 +270,25 @@ async def assign_task(request: TaskAssignRequest):
 # ---------------------------------------------------------------------------
 
 
+@app.get("/notifications", tags=["Notifications"])
+async def get_notifications(limit: int = 50):
+    """Get recent fleet notifications (offline events, errors, etc.)."""
+    return mqtt_subscriber.get_notifications(limit)
+
+
+@app.post("/notifications/read", tags=["Notifications"])
+async def mark_notifications_read():
+    """Mark all notifications as read."""
+    mqtt_subscriber.mark_notifications_read()
+    return {"success": True}
+
+
+@app.get("/notifications/unread-count", tags=["Notifications"])
+async def get_unread_count():
+    """Get the count of unread notifications."""
+    return {"count": mqtt_subscriber.get_unread_notification_count()}
+
+
 @app.get("/events", response_model=List[EventResponse], tags=["Events"])
 async def get_events(limit: int = 50):
     """Get recent fleet events."""

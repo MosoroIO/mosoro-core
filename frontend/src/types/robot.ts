@@ -84,11 +84,22 @@ export type WebSocketMessageType =
   | "initial_state"
   | "robot_update"
   | "heartbeat"
-  | "event";
+  | "event"
+  | "notification";
+
+export interface NotificationRecord {
+  id: string;
+  robot_id: string;
+  vendor: string;
+  event_type: "offline" | "error" | "task_failed" | string;
+  message: string;
+  timestamp: number;
+  read: boolean;
+}
 
 export interface WebSocketMessage {
   type: WebSocketMessageType;
-  data: FleetStatusResponse | RobotStatusResponse | EventResponse | null;
+  data: FleetStatusResponse | RobotStatusResponse | EventResponse | NotificationRecord | null;
   timestamp?: number;
 }
 

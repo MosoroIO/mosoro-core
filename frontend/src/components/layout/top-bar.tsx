@@ -1,11 +1,16 @@
 /* ------------------------------------------------------------------ */
-/* Top bar component with connection status and dark mode toggle       */
+/* Top bar component with connection status, notifications, theme      */
 /* ------------------------------------------------------------------ */
 
+import { useState } from "react";
 import { Sun, Moon, Menu } from "lucide-react";
 import type { ConnectionStatus } from "../../types/robot";
 import { useTheme } from "../../context/theme-context";
 import { useAuthContext } from "../../context/auth-context";
+import {
+  NotificationsBell,
+  NotificationsPanel,
+} from "../notifications/notifications-panel";
 
 interface TopBarProps {
   connectionStatus: ConnectionStatus;
@@ -59,9 +64,10 @@ function ThemeToggle() {
 
 function TopBar({ connectionStatus, onMenuToggle }: TopBarProps) {
   const { isLoggedIn, logout } = useAuthContext();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-surface px-4 lg:px-6">
+    <header className="relative flex h-16 items-center justify-between border-b border-border bg-surface px-4 lg:px-6">
       {/* Left: hamburger menu (mobile) + logo */}
       <div className="flex items-center gap-4">
         <button
@@ -79,14 +85,27 @@ function TopBar({ connectionStatus, onMenuToggle }: TopBarProps) {
             className="h-7 w-7 lg:hidden"
           />
           <h1 className="text-sm font-medium text-[var(--color-text-secondary)] hidden sm:block">
-            Fleet Management Dashboard
+            Robot Fleet Dashboard
           </h1>
         </div>
       </div>
 
-      {/* Right: status, theme, logout */}
+      {/* Right: status, notifications bell, theme, logout */}
       <div className="flex items-center gap-3">
         <ConnectionIndicator status={connectionStatus} />
+
+        {/* Notifications bell + panel */}
+        <div className="relative">
+          <NotificationsBell
+            isOpen={notificationsOpen}
+            onToggle={() => setNotificationsOpen((prev) => !prev)}
+          />
+          <NotificationsPanel
+            isOpen={notificationsOpen}
+            onClose={() => setNotificationsOpen(false)}
+          />
+        </div>
+
         <ThemeToggle />
         {isLoggedIn && (
           <button
