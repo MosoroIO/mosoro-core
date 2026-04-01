@@ -56,6 +56,7 @@ Browse premium features in the dashboard's Extensions page:
 
 ## Documentation
 
+- [Dashboard User Guide](docs/user-guide.md)
 - [Architecture Overview](docs/architecture.md)
 - [Adapter Development Guide](docs/adapter-guide.md)
 - [Contributing](CONTRIBUTING.md)
