@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mosoro-core"
 version = "1.0.0"
-description = "The neutral bridge for multi-vendor warehouse robot fleets"
+description = "Mosoro is an open-source communication bridge that lets robots from different vendors talk to each other through a unified MQTT-based protocol."
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.11"

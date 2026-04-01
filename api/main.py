@@ -19,7 +19,7 @@ Mosoro Unified API
 ===================
 
 FastAPI application providing REST endpoints and WebSocket for the
-Mosoro robot fleet management platform.
+Mosoro robot communications bridge.
 
 Endpoints:
     GET  /health          - Health check
@@ -92,7 +92,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Mosoro Fleet API",
-    description="Unified REST API for multi-vendor warehouse robot fleet management",
+    description="Unified REST API for the Mosoro open-source communication bridge for multi-vendor robot fleets",
     version="1.0.0",
     license_info={"name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0"},
     lifespan=lifespan,

@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/pypi/pyversions/mosoro-core)](https://pypi.org/project/mosoro-core/)
 
-The open-source communication bridge for multi-vendor warehouse robot fleets.
+The open-source communication bridge for multi-vendor robot fleets.
 
 ## Try It Now (no robots needed)
 

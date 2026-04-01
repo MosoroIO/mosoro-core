@@ -18,7 +18,7 @@
 Mosoro Core
 ============
 
-The neutral bridge for multi-vendor warehouse robot fleets.
+The open-source communication bridge for multi-vendor robot fleets.
 
 Public API:
     Models: MosoroMessage, MosoroPayload, Position, MessageHeader, CurrentTask, ErrorDetail
