@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 import { AppLayout } from "./components/layout/app-layout";
 import { AuthProvider, useAuthContext } from "./context/auth-context";
 import { ThemeProvider } from "./context/theme-context";
+import { NotificationsProvider, useNotifications } from "./context/notifications-context";
 import { useFleetWebSocket } from "./hooks/use-websocket";
 import { CommandPalette } from "./components/command-palette/command-palette";
 
@@ -48,7 +49,10 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 /* ------------------------------------------------------------------ */
 
 function AuthenticatedApp() {
-  const { fleetData, connectionStatus } = useFleetWebSocket();
+  const { addNotification } = useNotifications();
+  const { fleetData, connectionStatus } = useFleetWebSocket({
+    onNotification: addNotification,
+  });
 
   return (
     <Routes>
@@ -89,25 +93,27 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <AuthenticatedApp />
-                </ProtectedRoute>
-              }
+          <NotificationsProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <AuthenticatedApp />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+            <CommandPalette />
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className:
+                  "bg-surface border border-border text-[var(--color-text-primary)] shadow-lg",
+              }}
             />
-          </Routes>
-          <CommandPalette />
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              className:
-                "bg-surface border border-border text-[var(--color-text-primary)] shadow-lg",
-            }}
-          />
+          </NotificationsProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

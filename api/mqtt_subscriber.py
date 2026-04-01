@@ -20,17 +20,27 @@ Mosoro API MQTT Subscriber
 
 Background MQTT subscriber that feeds fleet state into the API layer.
 Runs as an asyncio background task alongside the FastAPI server.
+Includes in-memory notification store, offline detection, and outbound webhook dispatch.
 """
 
 import json
 import logging
 import os
+import threading
 import time
+import urllib.request
+import urllib.error
 from typing import Any, Callable, Dict, List, Optional
 
 import paho.mqtt.client as mqtt
 
 logger = logging.getLogger("mosoro.api.mqtt_subscriber")
+
+# Offline threshold: robot is considered offline if no update for this many seconds
+OFFLINE_THRESHOLD_SECONDS = int(os.environ.get("ROBOT_OFFLINE_THRESHOLD", "30"))
+
+# Notification event types that will fire toasts and webhook
+ALERTABLE_STATUSES = {"error"}
 
 
 class MQTTFleetSubscriber:
@@ -39,6 +49,9 @@ class MQTTFleetSubscriber:
 
     Subscribes to agent status/events topics and updates an in-memory
     state dict that the API endpoints read from.
+
+    Also maintains an in-memory notification log and dispatches webhook
+    calls when alertable events occur (robot offline, error status).
     """
 
     def __init__(self):
@@ -50,11 +63,29 @@ class MQTTFleetSubscriber:
         self._robots: Dict[str, Dict[str, Any]] = {}
         self._events: List[Dict[str, Any]] = []
         self._max_events = 500
+
+        # Notification store (in-memory, cleared on restart)
+        self._notifications: List[Dict[str, Any]] = []
+        self._max_notifications = 200
+
+        # Track previous robot statuses to detect transitions
+        self._prev_status: Dict[str, Optional[str]] = {}
+        # Track which robots have been flagged as offline to avoid repeat alerts
+        self._flagged_offline: set = set()
+
         self._connected = False
         self._start_time = time.time()
+        self._offline_check_thread: Optional[threading.Thread] = None
+        self._running = False
 
         # WebSocket broadcast callbacks
         self._ws_callbacks: List[Callable] = []
+
+        # Webhook config (optional — set NOTIFY_WEBHOOK_URL in .env)
+        self._webhook_url: Optional[str] = os.environ.get("NOTIFY_WEBHOOK_URL", "").strip() or None
+        self._webhook_events: set = set(
+            os.environ.get("NOTIFY_EVENTS", "offline,error,task_failed").split(",")
+        )
 
         # MQTT client
         self.client = mqtt.Client(client_id="mosoro-api-subscriber")
@@ -120,6 +151,8 @@ class MQTTFleetSubscriber:
 
                 if msg_type in ("status", "birth"):
                     self._update_robot_state(robot_id, payload)
+                    self._check_status_transition(robot_id)
+
                     # Notify WebSocket clients with a properly structured robot_update
                     state = self._robots.get(robot_id, {})
                     self._notify_ws_clients(
@@ -150,12 +183,119 @@ class MQTTFleetSubscriber:
 
     def _update_robot_state(self, robot_id: str, data: Dict[str, Any]):
         """Update the in-memory robot state."""
+        # When a robot sends a status update, it is back online — clear offline flag
+        self._flagged_offline.discard(robot_id)
+
         self._robots[robot_id] = {
             "robot_id": robot_id,
             "vendor": data.get("vendor", "unknown"),
             "data": data,
             "last_updated": time.time(),
         }
+
+    def _check_status_transition(self, robot_id: str):
+        """Detect status transitions and fire notifications for alertable states."""
+        state = self._robots.get(robot_id)
+        if not state:
+            return
+
+        payload = state.get("data", {}).get("payload", {})
+        new_status = payload.get("status")
+        prev_status = self._prev_status.get(robot_id)
+
+        # Only alert on transition INTO an alertable status (not on every message)
+        if new_status != prev_status and new_status in ALERTABLE_STATUSES:
+            notification = self._build_notification(
+                robot_id=robot_id,
+                vendor=state.get("vendor", "unknown"),
+                event_type=new_status,
+                message=f"Robot {robot_id} entered {new_status} state",
+            )
+            self._add_notification(notification)
+            self._dispatch_webhook(notification)
+
+        self._prev_status[robot_id] = new_status
+
+    def _check_offline_robots(self):
+        """Background thread: detect robots that have gone offline (no heartbeat)."""
+        while self._running:
+            now = time.time()
+            for robot_id, state in list(self._robots.items()):
+                last_updated = state.get("last_updated", 0)
+                if (
+                    now - last_updated > OFFLINE_THRESHOLD_SECONDS
+                    and robot_id not in self._flagged_offline
+                ):
+                    self._flagged_offline.add(robot_id)
+                    notification = self._build_notification(
+                        robot_id=robot_id,
+                        vendor=state.get("vendor", "unknown"),
+                        event_type="offline",
+                        message=f"Robot {robot_id} went offline (no update for >{OFFLINE_THRESHOLD_SECONDS}s)",
+                    )
+                    self._add_notification(notification)
+                    self._dispatch_webhook(notification)
+
+                    # Push an offline robot_update to WebSocket clients
+                    response = self._state_to_response(state)
+                    response["is_online"] = False
+                    response["status"] = "offline"
+                    self._notify_ws_clients({"type": "robot_update", "data": response})
+                    # Also push as an alert event for the notifications panel
+                    self._notify_ws_clients({"type": "notification", "data": notification})
+
+            time.sleep(10)  # Check every 10 seconds
+
+    @staticmethod
+    def _build_notification(
+        robot_id: str, vendor: str, event_type: str, message: str
+    ) -> Dict[str, Any]:
+        """Build a notification record."""
+        return {
+            "id": f"{robot_id}:{event_type}:{int(time.time())}",
+            "robot_id": robot_id,
+            "vendor": vendor,
+            "event_type": event_type,
+            "message": message,
+            "timestamp": time.time(),
+            "read": False,
+        }
+
+    def _add_notification(self, notification: Dict[str, Any]):
+        """Add a notification to the in-memory log and broadcast to WebSocket clients."""
+        self._notifications.append(notification)
+        if len(self._notifications) > self._max_notifications:
+            self._notifications = self._notifications[-self._max_notifications :]
+
+        logger.info(f"Notification: [{notification['event_type']}] {notification['message']}")
+
+        # Broadcast to connected dashboard clients
+        self._notify_ws_clients({"type": "notification", "data": notification})
+
+    def _dispatch_webhook(self, notification: Dict[str, Any]):
+        """POST the notification to the configured webhook URL (fire-and-forget)."""
+        if not self._webhook_url:
+            return
+        if notification["event_type"] not in self._webhook_events:
+            return
+
+        def _post():
+            try:
+                body = json.dumps(notification).encode()
+                req = urllib.request.Request(
+                    self._webhook_url,
+                    data=body,
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    logger.info(f"Webhook delivered: {resp.status} for {notification['event_type']}")
+            except urllib.error.URLError as e:
+                logger.warning(f"Webhook delivery failed: {e}")
+            except Exception as e:
+                logger.warning(f"Webhook error: {e}")
+
+        threading.Thread(target=_post, daemon=True).start()
 
     @staticmethod
     def _state_to_response(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -222,6 +362,19 @@ class MQTTFleetSubscriber:
         """Get recent events."""
         return list(self._events[-limit:])
 
+    def get_notifications(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """Get recent notifications (newest first)."""
+        return list(reversed(self._notifications[-limit:]))
+
+    def mark_notifications_read(self):
+        """Mark all notifications as read."""
+        for n in self._notifications:
+            n["read"] = True
+
+    def get_unread_notification_count(self) -> int:
+        """Get the count of unread notifications."""
+        return sum(1 for n in self._notifications if not n.get("read", False))
+
     def get_fleet_size(self) -> int:
         """Get the number of tracked robots."""
         return len(self._robots)
@@ -258,7 +411,7 @@ class MQTTFleetSubscriber:
     # -----------------------------------------------------------------------
 
     def start(self):
-        """Start the MQTT subscriber (blocking connect + loop_start)."""
+        """Start the MQTT subscriber (blocking connect + loop_start) and offline checker."""
         try:
             self.client.connect(self.mqtt_broker, self.mqtt_port, keepalive=60)
             self.client.loop_start()
@@ -266,8 +419,22 @@ class MQTTFleetSubscriber:
         except Exception as e:
             logger.error(f"Failed to start MQTT subscriber: {e}")
 
+        # Start offline detection background thread
+        self._running = True
+        self._offline_check_thread = threading.Thread(
+            target=self._check_offline_robots, daemon=True, name="mosoro-offline-check"
+        )
+        self._offline_check_thread.start()
+        logger.info(f"Offline detection started (threshold: {OFFLINE_THRESHOLD_SECONDS}s)")
+
+        if self._webhook_url:
+            logger.info(f"Webhook notifications enabled → {self._webhook_url} for events: {self._webhook_events}")
+        else:
+            logger.info("Webhook notifications disabled (set NOTIFY_WEBHOOK_URL to enable)")
+
     def stop(self):
-        """Stop the MQTT subscriber."""
+        """Stop the MQTT subscriber and offline checker."""
+        self._running = False
         self.client.loop_stop()
         self.client.disconnect()
         logger.info("MQTT fleet subscriber stopped")
