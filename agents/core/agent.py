@@ -52,8 +52,9 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import paho.mqtt.client as mqtt
 import yaml
-from paho.mqtt import client as mqtt
+from paho.mqtt.enums import CallbackAPIVersion
 
 from agents.adapters.base_adapter import BaseMosoroAdapter
 from mosoro_core.models import MosoroMessage, MosoroPayload
@@ -167,8 +168,11 @@ class MosoroEdgeAgent:
             "MQTT_USE_TLS", str(self.config.get("mqtt_use_tls", True))
         ).lower() in ("true", "1", "yes")
 
-        # MQTT Client
-        self.client = mqtt.Client(client_id=f"mosoro-agent-{self.robot_id}")
+        # MQTT Client — use VERSION2 API to avoid deprecation warnings in paho>=2.0
+        self.client = mqtt.Client(
+            callback_api_version=CallbackAPIVersion.VERSION2,
+            client_id=f"mosoro-agent-{self.robot_id}",
+        )
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.client.on_disconnect = self.on_disconnect
@@ -297,18 +301,18 @@ class MosoroEdgeAgent:
         )
         sys.exit(1)
 
-    def on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
+    def on_connect(self, client, userdata, connect_flags, reason_code, properties=None):
+        if reason_code == 0:
             logger.info(f"Connected to MQTT broker at {self.mqtt_broker}:{self.mqtt_port}")
             cmd_topic = f"mosoro/v1/agents/{self.robot_id}/commands"
             client.subscribe(cmd_topic)
             logger.info(f"Subscribed to commands: {cmd_topic}")
             self.publish_birth()
         else:
-            logger.error(f"Failed to connect to MQTT, return code: {rc}")
+            logger.error(f"Failed to connect to MQTT, reason code: {reason_code}")
 
-    def on_disconnect(self, client, userdata, rc):
-        logger.warning(f"Disconnected from MQTT (rc={rc})")
+    def on_disconnect(self, client, userdata, disconnect_flags, reason_code, properties=None):
+        logger.warning(f"Disconnected from MQTT (reason_code={reason_code})")
 
     def on_message(self, client, userdata, msg):
         """Handle incoming commands."""

@@ -33,6 +33,7 @@ import urllib.request
 from typing import Any, Callable, Dict, List, Optional
 
 import paho.mqtt.client as mqtt
+from paho.mqtt.enums import CallbackAPIVersion
 
 logger = logging.getLogger("mosoro.api.mqtt_subscriber")
 
@@ -87,8 +88,11 @@ class MQTTFleetSubscriber:
             os.environ.get("NOTIFY_EVENTS", "offline,error,task_failed").split(",")
         )
 
-        # MQTT client
-        self.client = mqtt.Client(client_id="mosoro-api-subscriber")
+        # MQTT client — use VERSION2 API to avoid deprecation warnings in paho>=2.0
+        self.client = mqtt.Client(
+            callback_api_version=CallbackAPIVersion.VERSION2,
+            client_id="mosoro-api-subscriber",
+        )
         self.client.on_connect = self._on_connect
         self.client.on_message = self._on_message
         self.client.on_disconnect = self._on_disconnect
@@ -123,9 +127,9 @@ class MQTTFleetSubscriber:
             )
             self.use_tls = False
 
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, userdata, connect_flags, reason_code, properties=None):
         """Called when connected to MQTT broker."""
-        if rc == 0:
+        if reason_code == 0:
             self._connected = True
             logger.info(f"API subscriber connected to MQTT at {self.mqtt_broker}:{self.mqtt_port}")
 
@@ -140,12 +144,12 @@ class MQTTFleetSubscriber:
                 client.subscribe(topic, qos)
                 logger.info(f"API subscribed to: {topic}")
         else:
-            logger.error(f"API subscriber failed to connect, rc={rc}")
+            logger.error(f"API subscriber failed to connect, reason_code={reason_code}")
 
-    def _on_disconnect(self, client, userdata, rc):
+    def _on_disconnect(self, client, userdata, disconnect_flags, reason_code, properties=None):
         """Called when disconnected from MQTT broker."""
         self._connected = False
-        logger.warning(f"API subscriber disconnected from MQTT (rc={rc})")
+        logger.warning(f"API subscriber disconnected from MQTT (reason_code={reason_code})")
 
     def _on_message(self, client, userdata, msg):
         """Handle incoming MQTT messages."""
