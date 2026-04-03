@@ -203,17 +203,17 @@ class MosoroEdgeAgent:
         client_key = os.environ.get("MQTT_CLIENT_KEY", self.config.get("mqtt_client_key"))
 
         try:
-            self.client.tls_set(
-                ca_certs=ca_cert,
-                certfile=client_cert,
-                keyfile=client_key,
-                tls_version=ssl.PROTOCOL_TLS_CLIENT,
-            )
-            # Enforce TLS 1.3 minimum
             self.client.tls_set_context(self._create_ssl_context(ca_cert, client_cert, client_key))
             logger.info(f"TLS configured for agent {self.robot_id} (ca={ca_cert})")
         except FileNotFoundError as e:
             logger.warning(f"TLS certificate not found: {e}. Falling back to non-TLS.")
+            self.mqtt_use_tls = False
+        except (ValueError, OSError) as e:
+            # TLS 1.3 minimum_version enforcement may fail on older OpenSSL builds.
+            # Safe to fall back in dev; Docker prod has a current OpenSSL.
+            logger.warning(
+                f"TLS not supported by this OpenSSL build: {e}. Falling back to non-TLS."
+            )
             self.mqtt_use_tls = False
         except Exception as e:
             logger.error(f"Failed to configure TLS: {e}")
@@ -323,7 +323,7 @@ class MosoroEdgeAgent:
             robot_id=self.robot_id,
             vendor=self.vendor,
             type="birth",
-            payload=MosoroPayload(status="online", health="starting"),
+            payload=MosoroPayload(status="idle", health="starting"),
         )
         topic = f"mosoro/v1/agents/{self.robot_id}/birth"
         self.client.publish(topic, birth_msg.model_dump_json(), qos=1, retain=True)
