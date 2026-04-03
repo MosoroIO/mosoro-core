@@ -28,8 +28,8 @@ import logging
 import os
 import threading
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from typing import Any, Callable, Dict, List, Optional
 
 import paho.mqtt.client as mqtt
@@ -116,9 +116,11 @@ class MQTTFleetSubscriber:
             self.use_tls = False
         except (ValueError, OSError) as e:
             # TLS 1.3 minimum_version enforcement may fail on older OpenSSL builds
-            # (e.g. macOS system Python). Safe to fall back in dev; Docker prod has
-            # a current OpenSSL.
-            logger.warning(f"TLS configuration not supported by this OpenSSL build: {e}. Falling back to non-TLS.")
+            # (e.g. macOS system Python). Safe to fall back in dev; Docker prod
+            # has a current OpenSSL.
+            logger.warning(
+                f"TLS not supported by this OpenSSL build: {e}. Falling back to non-TLS."
+            )
             self.use_tls = False
 
     def _on_connect(self, client, userdata, flags, rc):
@@ -237,7 +239,10 @@ class MQTTFleetSubscriber:
                         robot_id=robot_id,
                         vendor=state.get("vendor", "unknown"),
                         event_type="offline",
-                        message=f"Robot {robot_id} went offline (no update for >{OFFLINE_THRESHOLD_SECONDS}s)",
+                        message=(
+                            f"Robot {robot_id} went offline "
+                            f"(no update for >{OFFLINE_THRESHOLD_SECONDS}s)"
+                        ),
                     )
                     self._add_notification(notification)
                     self._dispatch_webhook(notification)
@@ -297,7 +302,9 @@ class MQTTFleetSubscriber:
                     method="POST",
                 )
                 with urllib.request.urlopen(req, timeout=5) as resp:
-                    logger.info(f"Webhook delivered: {resp.status} for {notification['event_type']}")
+                    logger.info(
+                        f"Webhook delivered: {resp.status} for {notification['event_type']}"
+                    )
             except urllib.error.URLError as e:
                 logger.warning(f"Webhook delivery failed: {e}")
             except Exception as e:
@@ -436,7 +443,10 @@ class MQTTFleetSubscriber:
         logger.info(f"Offline detection started (threshold: {OFFLINE_THRESHOLD_SECONDS}s)")
 
         if self._webhook_url:
-            logger.info(f"Webhook notifications enabled → {self._webhook_url} for events: {self._webhook_events}")
+            logger.info(
+                f"Webhook notifications enabled → {self._webhook_url} "
+                f"for events: {self._webhook_events}"
+            )
         else:
             logger.info("Webhook notifications disabled (set NOTIFY_WEBHOOK_URL to enable)")
 
