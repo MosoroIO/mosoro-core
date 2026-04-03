@@ -31,6 +31,7 @@ Example entry point registration in an adapter package's pyproject.toml::
 """
 
 import logging
+import sys
 from importlib.metadata import entry_points
 from typing import Dict, Type
 
@@ -54,7 +55,12 @@ def discover_adapters() -> Dict[str, Type[BaseMosoroAdapter]]:
     """
     adapters: Dict[str, Type[BaseMosoroAdapter]] = {}
 
-    discovered = entry_points(group=ADAPTER_ENTRY_POINT_GROUP)
+    # entry_points(group=...) requires Python 3.12+.
+    # On 3.9–3.11 we must call entry_points() with no args and select the group.
+    if sys.version_info >= (3, 12):
+        discovered = entry_points(group=ADAPTER_ENTRY_POINT_GROUP)
+    else:
+        discovered = entry_points().get(ADAPTER_ENTRY_POINT_GROUP, [])
 
     if not discovered:
         logger.debug(
