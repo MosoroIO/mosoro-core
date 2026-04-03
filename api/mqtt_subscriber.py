@@ -114,6 +114,12 @@ class MQTTFleetSubscriber:
         except FileNotFoundError as e:
             logger.warning(f"TLS cert not found: {e}. Falling back to non-TLS.")
             self.use_tls = False
+        except (ValueError, OSError) as e:
+            # TLS 1.3 minimum_version enforcement may fail on older OpenSSL builds
+            # (e.g. macOS system Python). Safe to fall back in dev; Docker prod has
+            # a current OpenSSL.
+            logger.warning(f"TLS configuration not supported by this OpenSSL build: {e}. Falling back to non-TLS.")
+            self.use_tls = False
 
     def _on_connect(self, client, userdata, flags, rc):
         """Called when connected to MQTT broker."""
@@ -279,11 +285,13 @@ class MQTTFleetSubscriber:
         if notification["event_type"] not in self._webhook_events:
             return
 
+        webhook_url: str = self._webhook_url  # narrowed; guard above ensures non-None
+
         def _post():
             try:
                 body = json.dumps(notification).encode()
                 req = urllib.request.Request(
-                    self._webhook_url,
+                    webhook_url,
                     data=body,
                     headers={"Content-Type": "application/json"},
                     method="POST",

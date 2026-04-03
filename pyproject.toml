@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "Mosoro is an open-source communication bridge that lets robots from different vendors talk to each other through a unified MQTT-based protocol."
 readme = "README.md"
 license = {text = "Apache-2.0"}
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 authors = [
     {name = "Mike Stemple", email = "mike@mosoro.io"},
 ]
@@ -17,6 +17,8 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Robotics",
@@ -70,7 +72,7 @@ include = ["mosoro_core*", "agents*", "gateway*", "api*", "security*"]
 # See mosoro-adapters-community for the reference implementation.
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py39"
 line-length = 100
 
 [tool.ruff.lint]

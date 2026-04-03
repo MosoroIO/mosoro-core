@@ -21,13 +21,17 @@ def test_client():
     mock_subscriber.get_all_robots.return_value = {}
     mock_subscriber.get_recent_events.return_value = []
 
-    # Patch the module-level mqtt_subscriber instance and plugin helpers
-    with patch("api.main.mqtt_subscriber", mock_subscriber):
+    # Patch the class so the module-level instantiation in api.main returns
+    # our mock (handles both first-import and reload scenarios).
+    with patch("api.mqtt_subscriber.MQTTFleetSubscriber", return_value=mock_subscriber):
         with patch("api.main.discover_plugins", return_value=[]):
             with patch("api.main.mount_plugin_routers"):
-                from api.main import app
+                import importlib
 
-                client = TestClient(app)
+                import api.main as api_main_module
+
+                importlib.reload(api_main_module)
+                client = TestClient(api_main_module.app)
                 yield client
 
 
